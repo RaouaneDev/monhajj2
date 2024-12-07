@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "packages": "Nos Forfaits",
+    "guide": "Guide Hajj",
+    "about": "À Propos",
+    "contact": "Contact",
+    "booking": "Réserver"
+  },
+  "home": {
+    "hero": {
+      "title": "Votre Voyage Spirituel Commence Ici",
+      "subtitle": "Des packages Hajj et Umrah sur mesure pour une expérience inoubliable",
+      "cta": "Découvrir nos forfaits"
+    },
+    "features": {
+      "title": "Pourquoi nous choisir",
+      "experience": "Plus de 15 ans d'expertise dans l'organisation de pèlerinages",
+      "support": "Guide spirituel francophone durant tout le séjour",
+      "quality": "Hôtels sélectionnés près des lieux saints",
+      "price": "Prix compétitifs"
+    },
+    "gallery": {
+      "title": "Lieux Saints",
+      "kaaba": "La Sainte Kaaba",
+      "nabawi": "Masjid Al-Nabawi",
+      "mecque": "Vue nocturne de la Mecque",
+      "interior": "Intérieur de la Mosquée",
+      "arafat": "Mont Arafat",
+      "medine": "Médine la nuit"
+    }
+  },
+  "packages": {
+    "title": "Nos Forfaits Populaires",
+    "subtitle": "Découvrez nos packages adaptés à vos besoins",
+    "hajj": "Forfait Hajj Confort",
+    "umrah": "Forfait Omra Ramadan",
+    "vip": "Package VIP",
+    "learnMore": "Détails du forfait"
+  },
+  "booking": {
+    "title": "Prêt à Vivre une Expérience Spirituelle Unique ?",
+    "form": {
+      "name": "Nom complet",
+      "email": "Email",
+      "phone": "Téléphone",
+      "package": "Sélectionnez un package",
+      "date": "Date de départ souhaitée",
+      "message": "Message (optionnel)",
+      "submit": "Réserver Maintenant"
+    }
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "address": "Adresse",
+    "phone": "Téléphone",
+    "email": "Email",
+    "form": {
+      "name": "Votre nom",
+      "email": "Votre email",
+      "message": "Votre message",
+      "submit": "Envoyer"
+    }
+  }
+}

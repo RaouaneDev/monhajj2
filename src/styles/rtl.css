@@ -1,0 +1,68 @@
+/* RTL Support */
+[dir="rtl"] {
+    /* Text alignment */
+    text-align: right;
+}
+
+[dir="rtl"] .container-custom {
+    direction: rtl;
+}
+
+/* Reverse margins and paddings in RTL */
+[dir="rtl"] .ml-2 {
+    margin-left: 0;
+    margin-right: 0.5rem;
+}
+
+[dir="rtl"] .mr-2 {
+    margin-right: 0;
+    margin-left: 0.5rem;
+}
+
+[dir="rtl"] .ml-3 {
+    margin-left: 0;
+    margin-right: 0.75rem;
+}
+
+[dir="rtl"] .mr-3 {
+    margin-right: 0;
+    margin-left: 0.75rem;
+}
+
+/* Reverse flex direction in RTL */
+[dir="rtl"] .flex {
+    flex-direction: row-reverse;
+}
+
+/* Keep some flex containers in original direction */
+[dir="rtl"] .flex-no-reverse {
+    flex-direction: row;
+}
+
+/* Adjust form inputs for RTL */
+[dir="rtl"] input,
+[dir="rtl"] textarea {
+    text-align: right;
+}
+
+/* Adjust icons and buttons for RTL */
+[dir="rtl"] .icon-left {
+    transform: scaleX(-1);
+}
+
+/* Adjust navigation for RTL */
+[dir="rtl"] .space-x-8 > * + * {
+    margin-left: 0;
+    margin-right: 2rem;
+}
+
+[dir="rtl"] .space-x-4 > * + * {
+    margin-left: 0;
+    margin-right: 1rem;
+}
+
+/* Adjust borders for RTL */
+[dir="rtl"] .border-l-4 {
+    border-left: none;
+    border-right: 4px solid;
+}
