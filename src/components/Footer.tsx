@@ -41,7 +41,7 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Contact</h4>
             <ul className="space-y-2 text-gray-300">
-              <li>Téléphone: +33 1 23 45 67 89</li>
+              <li>Téléphone: +33 783 647 594</li>
               <li>Email: contact@hajjtravel.com</li>
               <li>Adresse: 123 Rue du Commerce, Paris</li>
             </ul>
