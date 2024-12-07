@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* About Section */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">Hajj Travel</h3>
+            <h3 className="text-xl font-bold">RAOUANE</h3>
             <p className="text-gray-300">
               Votre partenaire de confiance pour un pèlerinage serein et spirituel.
             </p>
@@ -68,7 +68,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-700 mt-8 pt-6 text-center text-gray-300">
-          <p>&copy; {new Date().getFullYear()} Hajj Travel. Tous droits réservés.</p>
+          <p>&copy; {new Date().getFullYear()} RAOUANE. Tous droits réservés.</p>
         </div>
       </div>
     </footer>
