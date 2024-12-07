@@ -3,7 +3,7 @@ import { FaPhone, FaWhatsapp, FaTimes } from 'react-icons/fa';
 
 const FloatingCallButton: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const phoneNumber = '+33775702464';
+  const phoneNumber = '+33783647594';
 
   const handleWhatsAppClick = () => {
     window.open(`https://wa.me/${phoneNumber.replace(/\+/g, '')}`, '_blank');

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import FlipCard from '../components/FlipCard';
-import BookingQRCode from '../components/BookingQRCode';
 
 const Home: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -50,30 +49,115 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-black">
         <div className="container-custom">
-          <h2 className="text-3xl font-bold text-center mb-12">Pourquoi Nous Choisir</h2>
+          <h2 className="text-3xl font-bold text-center mb-4 text-yellow-500">Pourquoi Nous Choisir</h2>
+          <p className="text-center text-yellow-300 mb-12 max-w-2xl mx-auto">
+            Notre agence s'engage à vous offrir une expérience spirituelle authentique et confortable
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-xl shadow-xl transform hover:scale-105 transition-all duration-300">
+              <div className="text-4xl mb-4 text-black">🕌</div>
+              <h3 className="text-xl font-bold mb-2 text-black">Expertise Religieuse</h3>
+              <p className="text-black/80">
+                Guides religieux qualifiés pour vous accompagner dans tous les rituels
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-xl shadow-xl transform hover:scale-105 transition-all duration-300">
+              <div className="text-4xl mb-4 text-black">⭐</div>
+              <h3 className="text-xl font-bold mb-2 text-black">Service Premium</h3>
+              <p className="text-black/80">
+                Hôtels 5 étoiles à proximité des lieux saints et transport VIP
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-xl shadow-xl transform hover:scale-105 transition-all duration-300">
+              <div className="text-4xl mb-4 text-black">🤝</div>
+              <h3 className="text-xl font-bold mb-2 text-black">Accompagnement 24/7</h3>
+              <p className="text-black/80">
+                Une équipe disponible à tout moment pour votre confort et sécurité
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-xl shadow-xl transform hover:scale-105 transition-all duration-300">
+              <div className="text-4xl mb-4 text-black">💯</div>
+              <h3 className="text-xl font-bold mb-2 text-black">Satisfaction Garantie</h3>
+              <p className="text-black/80">
+                Des milliers de pèlerins satisfaits depuis plus de 15 ans
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-16 bg-gradient-to-b from-black to-gray-900">
+        <div className="container-custom">
+          <h2 className="text-3xl font-bold text-center mb-4 text-yellow-500">Témoignages</h2>
+          <p className="text-center text-yellow-300 mb-12 max-w-2xl mx-auto">
+            Ce que nos pèlerins disent de leur expérience avec nous
+          </p>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-6 bg-white rounded-lg shadow-md">
-              <div className="text-primary text-4xl mb-4">🌟</div>
-              <h3 className="text-xl font-semibold mb-2">Expérience</h3>
-              <p className="text-gray-600">
-                Plus de 15 ans d'expertise dans l'organisation de voyages spirituels
+            <div className="bg-black border border-yellow-500 p-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <img
+                  src="https://picsum.photos/100/100?random=1"
+                  alt="Ahmed"
+                  className="w-16 h-16 rounded-full border-2 border-yellow-500 mr-4"
+                />
+                <div>
+                  <h3 className="text-yellow-500 font-bold">Ahmed Benali</h3>
+                  <p className="text-yellow-300 text-sm">Hajj 2023</p>
+                </div>
+              </div>
+              <p className="text-gray-300 italic">
+                "Une organisation parfaite du début à la fin. Les guides étaient très professionnels et attentionnés. Je recommande vivement cette agence pour votre pèlerinage."
               </p>
+              <div className="mt-4 text-yellow-500">
+                ⭐⭐⭐⭐⭐
+              </div>
             </div>
-            <div className="text-center p-6 bg-white rounded-lg shadow-md">
-              <div className="text-primary text-4xl mb-4">🏨</div>
-              <h3 className="text-xl font-semibold mb-2">Qualité Premium</h3>
-              <p className="text-gray-600">
-                Hébergement de luxe et services haut de gamme garantis
+
+            <div className="bg-black border border-yellow-500 p-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <img
+                  src="https://picsum.photos/100/100?random=2"
+                  alt="Fatima"
+                  className="w-16 h-16 rounded-full border-2 border-yellow-500 mr-4"
+                />
+                <div>
+                  <h3 className="text-yellow-500 font-bold">Fatima Zahra</h3>
+                  <p className="text-yellow-300 text-sm">Omra Ramadan 2023</p>
+                </div>
+              </div>
+              <p className="text-gray-300 italic">
+                "Un voyage spirituel inoubliable. L'hébergement était excellent et proche des lieux saints. Le personnel était à l'écoute de nos besoins 24h/24."
               </p>
+              <div className="mt-4 text-yellow-500">
+                ⭐⭐⭐⭐⭐
+              </div>
             </div>
-            <div className="text-center p-6 bg-white rounded-lg shadow-md">
-              <div className="text-primary text-4xl mb-4">👥</div>
-              <h3 className="text-xl font-semibold mb-2">Accompagnement</h3>
-              <p className="text-gray-600">
-                Support 24/7 et guides expérimentés à votre service
+
+            <div className="bg-black border border-yellow-500 p-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <img
+                  src="https://picsum.photos/100/100?random=3"
+                  alt="Karim"
+                  className="w-16 h-16 rounded-full border-2 border-yellow-500 mr-4"
+                />
+                <div>
+                  <h3 className="text-yellow-500 font-bold">Karim Mansouri</h3>
+                  <p className="text-yellow-300 text-sm">Omra 2024</p>
+                </div>
+              </div>
+              <p className="text-gray-300 italic">
+                "Merci pour cette magnifique expérience. Le guide était très compétent et nous a parfaitement accompagnés dans tous les rituels. Je reviendrai pour le Hajj insha'Allah."
               </p>
+              <div className="mt-4 text-yellow-500">
+                ⭐⭐⭐⭐⭐
+              </div>
             </div>
           </div>
         </div>
@@ -85,10 +169,10 @@ const Home: React.FC = () => {
           <h2 className="text-4xl font-bold text-center mb-12">Nos Forfaits</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FlipCard 
-              frontImage="https://cdn.pixabay.com/photo/2018/04/19/05/47/kaaba-3332379_1280.jpg"
-              frontTitle="Omra Ramadan"
-              frontDescription="15 jours incluant les derniers jours du Ramadan"
-              backTitle="Détails du forfait Omra Ramadan"
+              frontImage="https://picsum.photos/800/600?random=4"
+              frontTitle="Omra Janvier 2025"
+              frontDescription="15 jours - Départ le 10 Janvier 2025"
+              backTitle="Détails du forfait Omra"
               backDescription="✓ Vols directs inclus
 ✓ Hôtels 5* à proximité des lieux saints
 ✓ Pension complète
@@ -99,31 +183,31 @@ const Home: React.FC = () => {
             />
 
             <FlipCard 
-              frontImage="https://cdn.pixabay.com/photo/2020/04/14/10/15/mosque-5041799_1280.jpg"
-              frontTitle="Hajj Confort"
-              frontDescription="Programme complet de 3 semaines tout inclus"
-              backTitle="Détails du forfait Hajj Confort"
+              frontImage="https://picsum.photos/800/600?random=5"
+              frontTitle="Omra Février 2025"
+              frontDescription="Programme complet - Départ le 15 Février 2025"
+              backTitle="Détails du forfait"
               backDescription="✓ Vols directs inclus
 ✓ Hôtels 5* à La Mecque et Médine
-✓ Tentes climatisées à Mina
+✓ Tentes VIP à Mina
 ✓ Pension complète
-✓ Guide expert pour les rituels
-✓ Transport VIP sur place"
-              price="6500€"
+✓ Guide expert dédié
+✓ Transport climatisé"
+              price="2700€"
             />
 
             <FlipCard 
-              frontImage="https://cdn.pixabay.com/photo/2018/02/24/16/35/hajj-3178821_1280.jpg"
-              frontTitle="Omra Express"
-              frontDescription="Programme court de 10 jours"
-              backTitle="Détails du forfait Omra Express"
-              backDescription="✓ Vols directs inclus
-✓ Hôtels 4* à proximité
+              frontImage="https://picsum.photos/800/600?random=6"
+              frontTitle="Omra Mars 2025"
+              frontDescription="10 jours - Départ le 5 Mars 2025"
+              backTitle="Détails du forfait"
+              backDescription="✓ Vols avec escale
+✓ Hôtels 4* bien situés
 ✓ Demi-pension
 ✓ Guide francophone
-✓ Transferts aéroport
-✓ Assistance 24/7"
-              price="1900€"
+✓ Visites incluses
+✓ Transport inclus"
+              price="2300€"
             />
           </div>
           <div className="text-center mt-12">
@@ -134,13 +218,6 @@ const Home: React.FC = () => {
               Voir tous nos forfaits
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Section QR Code */}
-      <section className="py-12 bg-gray-50">
-        <div className="container-custom">
-          <BookingQRCode />
         </div>
       </section>
 

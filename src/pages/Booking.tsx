@@ -3,9 +3,24 @@ import { useNavigate } from 'react-router-dom';
 
 // Configuration des forfaits
 const packages = [
-  { id: 'standard', name: 'Standard', price: 3000 },
-  { id: 'premium', name: 'Premium', price: 4500 },
-  { id: 'vip', name: 'VIP', price: 6000 },
+  { 
+    id: 'janvier2025',
+    name: 'Omra Janvier 2025',
+    price: 2500,
+    description: 'Départ le 10 Janvier 2025 - 15 jours'
+  },
+  { 
+    id: 'fevrier2025',
+    name: 'Omra Février 2025',
+    price: 2700,
+    description: 'Départ le 15 Février 2025 - 12 jours'
+  },
+  { 
+    id: 'mars2025',
+    name: 'Omra Mars 2025',
+    price: 2300,
+    description: 'Départ le 5 Mars 2025 - 10 jours'
+  },
 ];
 
 const roomTypes = [
@@ -78,7 +93,7 @@ const Booking: React.FC = () => {
   }, [formData.package, formData.roomType]);
 
   // Gestion des changements dans le formulaire
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -137,6 +152,27 @@ const Booking: React.FC = () => {
     }
   };
 
+  // Fonction de partage
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Réservation Monhajj',
+      text: 'Un ami vous invite à réserver votre Omra 2025 avec Monhajj ! 🕋✨',
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback pour les navigateurs qui ne supportent pas l'API de partage
+        navigator.clipboard.writeText(window.location.href);
+        alert('Lien copié ! Partagez-le avec vos amis intéressés par le voyage.');
+      }
+    } catch (error) {
+      console.error('Erreur lors du partage:', error);
+    }
+  };
+
   return (
     <div id="top" className="min-h-screen bg-dark-200 py-12 px-4 sm:px-6 lg:px-8">
       {/* Bouton retour en haut */}
@@ -173,6 +209,19 @@ const Booking: React.FC = () => {
           Retour à l'accueil
         </button>
 
+        {/* Bouton de partage */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={handleShare}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded-full flex items-center space-x-2 transition-all duration-300"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+            </svg>
+            <span>Un ami intéressé ? Partager le lien</span>
+          </button>
+        </div>
+
         <h2 className="text-3xl font-bold text-center text-yellow-light mb-8">
           Réservation de Voyage
         </h2>
@@ -189,12 +238,13 @@ const Booking: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  name="firstName"
                   id="firstName"
+                  name="firstName"
                   required
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-600 bg-dark-300 text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                  placeholder="Votre prénom"
                 />
               </div>
 
@@ -204,12 +254,13 @@ const Booking: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  name="lastName"
                   id="lastName"
+                  name="lastName"
                   required
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-600 bg-dark-300 text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                  placeholder="Votre nom"
                 />
               </div>
             </div>
@@ -220,12 +271,13 @@ const Booking: React.FC = () => {
               </label>
               <input
                 type="text"
-                name="address"
                 id="address"
+                name="address"
                 required
                 value={formData.address}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-600 bg-dark-300 text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                placeholder="Votre adresse"
               />
             </div>
 
@@ -235,14 +287,14 @@ const Booking: React.FC = () => {
                   Genre
                 </label>
                 <select
-                  name="gender"
                   id="gender"
+                  name="gender"
                   required
                   value={formData.gender}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-600 bg-dark-300 text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
                 >
-                  <option value="">Sélectionnez</option>
+                  <option value="">Sélectionnez votre genre</option>
                   <option value="male">Homme</option>
                   <option value="female">Femme</option>
                 </select>
@@ -254,14 +306,15 @@ const Booking: React.FC = () => {
                 </label>
                 <input
                   type="number"
-                  name="age"
                   id="age"
+                  name="age"
                   required
-                  min="18"
-                  max="120"
                   value={formData.age}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-600 bg-dark-300 text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                  placeholder="Votre âge"
+                  min="18"
+                  max="120"
                 />
               </div>
             </div>
@@ -272,12 +325,13 @@ const Booking: React.FC = () => {
               </label>
               <input
                 type="text"
-                name="nationality"
                 id="nationality"
+                name="nationality"
                 required
                 value={formData.nationality}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-600 bg-dark-300 text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                placeholder="Votre nationalité"
               />
             </div>
 
@@ -288,12 +342,13 @@ const Booking: React.FC = () => {
                 </label>
                 <input
                   type="tel"
-                  name="phone"
                   id="phone"
+                  name="phone"
                   required
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-600 bg-dark-300 text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                  placeholder="Votre numéro de téléphone"
                 />
               </div>
 
@@ -303,12 +358,13 @@ const Booking: React.FC = () => {
                 </label>
                 <input
                   type="email"
-                  name="email"
                   id="email"
+                  name="email"
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-600 bg-dark-300 text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                  placeholder="Votre email"
                 />
               </div>
             </div>
@@ -323,17 +379,17 @@ const Booking: React.FC = () => {
                 Forfait
               </label>
               <select
-                name="package"
                 id="package"
+                name="package"
                 required
                 value={formData.package}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-600 bg-dark-300 text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
               >
                 <option value="">Sélectionnez un forfait</option>
                 {packages.map(pkg => (
                   <option key={pkg.id} value={pkg.id}>
-                    {pkg.name} - {pkg.price}€
+                    {pkg.name} - {pkg.description} ({pkg.price}€)
                   </option>
                 ))}
               </select>
@@ -344,14 +400,14 @@ const Booking: React.FC = () => {
                 Type de chambre
               </label>
               <select
-                name="roomType"
                 id="roomType"
+                name="roomType"
                 required
                 value={formData.roomType}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-600 bg-dark-300 text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
               >
-                <option value="">Sélectionnez un type de chambre</option>
+                <option value="">Sélectionnez le type de chambre</option>
                 {roomTypes.map(room => (
                   <option key={room.id} value={room.id}>
                     {room.name} - {room.description}
@@ -386,15 +442,11 @@ const Booking: React.FC = () => {
             <textarea
               id="message"
               name="message"
-              rows={5}
-              className="w-full px-6 py-4 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary resize-none text-gray-700"
-              placeholder="Partagez-nous vos questions ou demandes particulières..."
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  message: e.target.value
-                });
-              }}
+              value={formData.message}
+              onChange={handleInputChange}
+              className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+              rows={4}
+              placeholder="Message supplémentaire (optionnel)"
             />
           </div>
 
@@ -411,7 +463,7 @@ const Booking: React.FC = () => {
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
