@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 // Configuration des forfaits
 const packages = [
@@ -30,6 +32,89 @@ const roomTypes = [
 ];
 
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYibyVKJiUILauZcrVqcFm1I20S4-_DKIS2LYcog38VWrj8KDkJ_MO2OzSR87_f8X_/exec';
+
+const stripePromise = loadStripe('votre_cle_publique_stripe');
+
+const PaymentForm = ({ amount, onSuccess }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [error, setError] = useState(null);
+  const [processing, setProcessing] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    
+    if (!stripe || !elements) {
+      return;
+    }
+
+    setProcessing(true);
+
+    try {
+      // Créer un payment intent côté serveur (à implémenter)
+      const response = await fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount }),
+      });
+
+      const data = await response.json();
+
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
+        data.clientSecret,
+        {
+          payment_method: {
+            card: elements.getElement(CardElement),
+          },
+        }
+      );
+
+      if (stripeError) {
+        setError(stripeError.message);
+      } else if (paymentIntent.status === 'succeeded') {
+        onSuccess(paymentIntent);
+      }
+    } catch (err) {
+      setError('Une erreur est survenue lors du paiement.');
+    }
+
+    setProcessing(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-8">
+      <div className="mb-4">
+        <CardElement
+          options={{
+            style: {
+              base: {
+                fontSize: '16px',
+                color: '#424770',
+                '::placeholder': {
+                  color: '#aab7c4',
+                },
+              },
+              invalid: {
+                color: '#9e2146',
+              },
+            },
+          }}
+          className="p-3 border rounded-md"
+        />
+      </div>
+      {error && <div className="text-red-500 mb-4">{error}</div>}
+      <button
+        type="submit"
+        disabled={!stripe || processing}
+        className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark disabled:opacity-50"
+      >
+        {processing ? 'Traitement...' : `Payer ${amount}€`}
+      </button>
+    </form>
+  );
+};
 
 const Booking: React.FC = () => {
   const navigate = useNavigate();
@@ -75,6 +160,9 @@ const Booking: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPayment, setShowPayment] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(null);
 
   // Calcul du prix total quand le forfait ou le type de chambre change
   useEffect(() => {
@@ -92,18 +180,105 @@ const Booking: React.FC = () => {
     }
   }, [formData.package, formData.roomType]);
 
-  // Gestion des changements dans le formulaire
+  // Fonction de validation des champs
+  const validateField = (name: string, value: string): string => {
+    switch (name) {
+      case 'firstName':
+      case 'lastName':
+        const nameRegex = /^[A-Za-zÀ-ÿ\s-]+$/;
+        if (!nameRegex.test(value)) {
+          return 'Ce champ ne doit contenir que des lettres';
+        }
+        if (value.length < 2) {
+          return 'Ce champ doit contenir au moins 2 caractères';
+        }
+        break;
+      case 'nationality':
+        const nationalityRegex = /^[A-Za-zÀ-ÿ\s-]+$/;
+        if (!nationalityRegex.test(value)) {
+          return 'La nationalité ne doit contenir que des lettres';
+        }
+        if (value.length < 2) {
+          return 'Veuillez entrer votre nationalité (minimum 2 caractères)';
+        }
+        break;
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          return 'Veuillez entrer une adresse email valide';
+        }
+        break;
+      case 'phone':
+        const phoneRegex = /^(\+33|0)[1-9](\d{2}){4}$/;
+        if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+          return 'Veuillez entrer un numéro de téléphone valide (format français)';
+        }
+        break;
+      case 'age':
+        const age = parseInt(value);
+        if (isNaN(age) || age < 0 || age > 100) {
+          return 'L\'âge doit être compris entre 0 et 100 ans';
+        }
+        break;
+    }
+    return '';
+  };
+
+  // Mise à jour de handleInputChange pour inclure la validation
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+
+    // Valider le champ
+    const error = validateField(name, value);
+    setErrors(prev => ({
+      ...prev,
+      [name]: error
+    }));
   };
 
-  // Soumission du formulaire
+  // Validation du formulaire complet
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    let isValid = true;
+
+    // Valider chaque champ
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key === 'message') return; // Le message est optionnel
+      
+      const error = validateField(key, value);
+      if (error) {
+        newErrors[key] = error;
+        isValid = false;
+      }
+    });
+
+    // Vérifier si un forfait et un type de chambre sont sélectionnés
+    if (!formData.package) {
+      newErrors.package = 'Veuillez sélectionner un forfait';
+      isValid = false;
+    }
+    if (!formData.roomType) {
+      newErrors.roomType = 'Veuillez sélectionner un type de chambre';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // Gestion des changements dans le formulaire
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus('idle');
     
@@ -143,6 +318,8 @@ const Booking: React.FC = () => {
       setShowSuccess(true);
       setFormData(initialFormState);
       setTotalPrice('');
+      setSelectedPackage(selectedPackage);
+      setShowPayment(true);
       
     } catch (error) {
       console.error('Erreur lors de la soumission:', error);
@@ -173,8 +350,22 @@ const Booking: React.FC = () => {
     }
   };
 
+  const handlePaymentSuccess = async (paymentIntent) => {
+    // Envoyer les détails de la réservation à Google Sheets
+    // Votre code existant pour Google Sheets...
+
+    // Rediriger vers une page de confirmation
+    navigate('/confirmation', { 
+      state: { 
+        paymentId: paymentIntent.id,
+        amount: paymentIntent.amount,
+        // autres détails de la réservation...
+      } 
+    });
+  };
+
   return (
-    <div id="top" className="min-h-screen bg-dark-200 py-12 px-4 sm:px-6 lg:px-8">
+    <div id="top" className="min-h-screen bg-dark-200 py-12 px-4 sm:px-6 lg:px-8 relative">
       {/* Bouton retour en haut */}
       {showScrollTop && (
         <button
@@ -197,7 +388,7 @@ const Booking: React.FC = () => {
           </svg>
         </button>
       )}
-      <div className="max-w-3xl mx-auto bg-dark-100 rounded-lg shadow-xl p-6 sm:p-8">
+      <div className="max-w-3xl mx-auto bg-dark-100 rounded-lg shadow-xl p-6 sm:p-8 relative">
         {/* Bouton retour */}
         <button
           onClick={() => navigate('/')}
@@ -241,11 +432,17 @@ const Booking: React.FC = () => {
                   id="firstName"
                   name="firstName"
                   required
+                  pattern="[A-Za-zÀ-ÿ\s-]+"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                  className={`mt-1 block w-full py-3 px-4 border ${
+                    errors.firstName ? 'border-red-500' : 'border-gray-300'
+                  } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
                   placeholder="Votre prénom"
                 />
+                {errors.firstName && (
+                  <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>
+                )}
               </div>
 
               <div>
@@ -257,11 +454,17 @@ const Booking: React.FC = () => {
                   id="lastName"
                   name="lastName"
                   required
+                  pattern="[A-Za-zÀ-ÿ\s-]+"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                  className={`mt-1 block w-full py-3 px-4 border ${
+                    errors.lastName ? 'border-red-500' : 'border-gray-300'
+                  } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
                   placeholder="Votre nom"
                 />
+                {errors.lastName && (
+                  <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -276,9 +479,14 @@ const Booking: React.FC = () => {
                 required
                 value={formData.address}
                 onChange={handleInputChange}
-                className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                className={`mt-1 block w-full py-3 px-4 border ${
+                  errors.address ? 'border-red-500' : 'border-gray-300'
+                } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
                 placeholder="Votre adresse"
               />
+              {errors.address && (
+                <p className="mt-1 text-sm text-red-500">{errors.address}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -292,12 +500,17 @@ const Booking: React.FC = () => {
                   required
                   value={formData.gender}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                  className={`mt-1 block w-full py-3 px-4 border ${
+                    errors.gender ? 'border-red-500' : 'border-gray-300'
+                  } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
                 >
                   <option value="">Sélectionnez votre genre</option>
                   <option value="male">Homme</option>
                   <option value="female">Femme</option>
                 </select>
+                {errors.gender && (
+                  <p className="mt-1 text-sm text-red-500">{errors.gender}</p>
+                )}
               </div>
 
               <div>
@@ -309,13 +522,18 @@ const Booking: React.FC = () => {
                   id="age"
                   name="age"
                   required
+                  min="0"
+                  max="100"
                   value={formData.age}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                  className={`mt-1 block w-full py-3 px-4 border ${
+                    errors.age ? 'border-red-500' : 'border-gray-300'
+                  } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
                   placeholder="Votre âge"
-                  min="18"
-                  max="120"
                 />
+                {errors.age && (
+                  <p className="mt-1 text-sm text-red-500">{errors.age}</p>
+                )}
               </div>
             </div>
 
@@ -328,11 +546,17 @@ const Booking: React.FC = () => {
                 id="nationality"
                 name="nationality"
                 required
+                pattern="[A-Za-zÀ-ÿ\s-]+"
                 value={formData.nationality}
                 onChange={handleInputChange}
-                className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                className={`mt-1 block w-full py-3 px-4 border ${
+                  errors.nationality ? 'border-red-500' : 'border-gray-300'
+                } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
                 placeholder="Votre nationalité"
               />
+              {errors.nationality && (
+                <p className="mt-1 text-sm text-red-500">{errors.nationality}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -347,9 +571,14 @@ const Booking: React.FC = () => {
                   required
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                  className={`mt-1 block w-full py-3 px-4 border ${
+                    errors.phone ? 'border-red-500' : 'border-gray-300'
+                  } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
                   placeholder="Votre numéro de téléphone"
                 />
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+                )}
               </div>
 
               <div>
@@ -363,9 +592,14 @@ const Booking: React.FC = () => {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
-                  placeholder="Votre email"
+                  className={`mt-1 block w-full py-3 px-4 border ${
+                    errors.email ? 'border-red-500' : 'border-gray-300'
+                  } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
+                  placeholder="votre@email.com"
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                )}
               </div>
             </div>
           </div>
@@ -384,7 +618,9 @@ const Booking: React.FC = () => {
                 required
                 value={formData.package}
                 onChange={handleInputChange}
-                className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                className={`mt-1 block w-full py-3 px-4 border ${
+                  errors.package ? 'border-red-500' : 'border-gray-300'
+                } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
               >
                 <option value="">Sélectionnez un forfait</option>
                 {packages.map(pkg => (
@@ -393,6 +629,9 @@ const Booking: React.FC = () => {
                   </option>
                 ))}
               </select>
+              {errors.package && (
+                <p className="mt-1 text-sm text-red-500">{errors.package}</p>
+              )}
             </div>
 
             <div>
@@ -405,7 +644,9 @@ const Booking: React.FC = () => {
                 required
                 value={formData.roomType}
                 onChange={handleInputChange}
-                className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
+                className={`mt-1 block w-full py-3 px-4 border ${
+                  errors.roomType ? 'border-red-500' : 'border-gray-300'
+                } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
               >
                 <option value="">Sélectionnez le type de chambre</option>
                 {roomTypes.map(room => (
@@ -414,6 +655,9 @@ const Booking: React.FC = () => {
                   </option>
                 ))}
               </select>
+              {errors.roomType && (
+                <p className="mt-1 text-sm text-red-500">{errors.roomType}</p>
+              )}
             </div>
 
             {totalPrice && (
@@ -529,9 +773,14 @@ const Booking: React.FC = () => {
           </div>
         )}
 
-        <p className="mt-8 text-sm text-gray-400 text-center">
-          Nous traiterons votre demande dans les plus brefs délais.
-        </p>
+        {showPayment && selectedPackage && (
+          <Elements stripe={stripePromise}>
+            <PaymentForm 
+              amount={totalPrice} 
+              onSuccess={handlePaymentSuccess}
+            />
+          </Elements>
+        )}
       </div>
     </div>
   );
