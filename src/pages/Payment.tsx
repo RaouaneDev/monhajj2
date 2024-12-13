@@ -76,11 +76,27 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
         return;
       }
 
-      // Ici, vous pouvez appeler votre API backend avec paymentMethod.id
+      // Stocker les informations de paiement dans le localStorage
+      localStorage.setItem('paymentInfo', JSON.stringify({
+        paymentMethodId: paymentMethod.id,
+        amount: amount,
+        deposit: deposit,
+        remainingAmount: remainingAmount,
+        timestamp: new Date().toISOString()
+      }));
+
+      // Ici, vous devriez normalement appeler votre API backend
       console.log('Payment Method:', paymentMethod);
       
-      // Rediriger vers une page de confirmation
-      navigate('/payment-success');
+      // Rediriger vers une page de confirmation avec les détails du paiement
+      navigate('/payment-success', {
+        state: {
+          paymentMethodId: paymentMethod.id,
+          amount: amount,
+          deposit: deposit,
+          remainingAmount: remainingAmount
+        }
+      });
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
     } finally {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Box, Typography, Button } from '@mui/material';
 
@@ -93,6 +93,13 @@ const Booking: React.FC = () => {
     termsAccepted: ''
   });
 
+  // Effect to update price when package or roomType changes
+  useEffect(() => {
+    if (formData.package && formData.roomType) {
+      updateTotalPrice(formData.package, formData.roomType);
+    }
+  }, [formData.package, formData.roomType, updateTotalPrice]);
+
   const updateTotalPrice = useCallback((packageId: string, roomTypeId: string) => {
     const selectedPkg = packages.find(p => p.id === packageId);
     const selectedRoom = roomTypes.find(r => r.id === roomTypeId);
@@ -150,11 +157,13 @@ const Booking: React.FC = () => {
   const handlePackageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const packageId = event.target.value;
     setFormData(prev => ({ ...prev, package: packageId }));
+    updateTotalPrice(packageId, formData.roomType);
   };
 
   const handleRoomTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const roomType = event.target.value;
     setFormData(prev => ({ ...prev, roomType }));
+    updateTotalPrice(formData.package, roomType);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
