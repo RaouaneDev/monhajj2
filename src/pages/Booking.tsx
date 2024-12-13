@@ -80,8 +80,6 @@ if (!STRIPE_PUBLIC_KEY) {
   console.error('STRIPE_PUBLIC_KEY not configured. Please check environment variables.');
 }
 
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYibyVKJiUILauZcrVqcFm1I20S4-_DKIS2LYcog38VWrj8KDkJ_MO2OzSR87_f8X_/exec';
-
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY || '');
 
 interface PaymentFormProps {
@@ -351,7 +349,12 @@ const Booking: React.FC = () => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [deposit, setDeposit] = useState(0);
   const [remainingAmount, setRemainingAmount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState(initialFormState);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPayment, setShowPayment] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -361,13 +364,6 @@ const Booking: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const [formData, setFormData] = useState(initialFormState);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showPayment, setShowPayment] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleRoomTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const roomType = event.target.value;
@@ -939,20 +935,14 @@ const Booking: React.FC = () => {
 
         {showPayment && selectedPackage && (
           <div className="mt-8">
-            {isLoading ? (
-              <div className="flex justify-center items-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              </div>
-            ) : (
-              <Elements stripe={stripePromise}>
-                <PaymentForm 
-                  amount={totalPrice} 
-                  deposit={deposit}
-                  remainingAmount={remainingAmount}
-                  onSuccess={handlePaymentSuccess}
-                />
-              </Elements>
-            )}
+            <Elements stripe={stripePromise}>
+              <PaymentForm 
+                amount={totalPrice} 
+                deposit={deposit}
+                remainingAmount={remainingAmount}
+                onSuccess={handlePaymentSuccess}
+              />
+            </Elements>
           </div>
         )}
       </div>
