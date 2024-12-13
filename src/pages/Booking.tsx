@@ -37,14 +37,14 @@ const stripePromise = loadStripe('votre_cle_publique_stripe');
 
 interface PaymentFormProps {
   amount: number;
-  onSuccess: (paymentIntent: any) => void;
+  onSuccess: () => void;
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
   const stripe = useStripe();
   const elements = useElements();
-  const [error, setError] = useState(null);
-  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState<boolean>(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -63,8 +63,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
     }
 
     try {
-      // Créer un payment intent côté serveur (à implémenter)
-      const response = await fetch('/api/create-payment-intent', {
+      const response = await fetch('https://monhajj2backend.onrender.com/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,9 +71,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
         body: JSON.stringify({ amount }),
       });
 
+      if (!response.ok) {
+        throw new Error('Failed to create payment intent');
+      }
+
       const data = await response.json();
 
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
+      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
         data.clientSecret,
         {
           payment_method: {
@@ -83,13 +86,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
         }
       );
 
-      if (stripeError) {
-        setError(stripeError.message);
-      } else if (paymentIntent.status === 'succeeded') {
-        onSuccess(paymentIntent);
+      if (confirmError) {
+        setError(confirmError.message || 'An error occurred during payment');
+        setProcessing(false);
+        return;
+      }
+
+      if (paymentIntent.status === 'succeeded') {
+        setError(null);
+        onSuccess();
       }
     } catch (err) {
-      setError('Une erreur est survenue lors du paiement.');
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setProcessing(false);
     }
 
     setProcessing(false);
