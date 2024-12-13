@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import FloatingCallButton from '../components/FloatingCallButton';
 
-const MainLayout: React.FC = () => {
+interface MainLayoutProps {
+  children: ReactNode;
+}
+
+const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen bg-dark-300">
       <Navbar />
       <main className="flex-grow">
-        <Outlet />
+        {children}
       </main>
       <FloatingCallButton />
       <Footer />

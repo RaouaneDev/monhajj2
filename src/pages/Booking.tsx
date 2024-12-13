@@ -36,6 +36,10 @@ const roomTypes = [
   { id: 'double', name: 'Chambre Double', multiplier: 1.5, description: 'Chambre pour 2 personnes' },
 ];
 
+// URL de l'API avec fallback
+const API_URL = process.env.REACT_APP_API_URL || 'https://monhajj2backend.onrender.com';
+console.log('API URL configured:', API_URL);
+
 // Assurez-vous que la clé publique est correctement chargée
 console.log('Stripe Public Key:', process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
@@ -112,57 +116,64 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
     setError(null);
 
     try {
+      // Création de l'intention de paiement
       console.log('Envoi de la requête de paiement...');
-      console.log('URL de l\'API:', process.env.REACT_APP_API_URL);
+      console.log('URL de l\'API:', API_URL);
       console.log('Montant:', deposit);
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/create-payment-intent`, {
+      const paymentResponse = await fetch(`${API_URL}/create-payment-intent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
           amount: deposit,
-          currency: 'eur'
+          currency: 'eur',
+          metadata: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email
+          }
         }),
+        credentials: 'include'
       });
 
-      console.log('Réponse du serveur:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
+      if (!paymentResponse.ok) {
+        const errorText = await paymentResponse.text();
         console.error('Erreur serveur:', errorText);
-        throw new Error(`Erreur lors de la création de l'intention de paiement: ${response.status} ${errorText}`);
+        throw new Error(`Erreur lors de la création de l'intention de paiement: ${paymentResponse.status} ${errorText}`);
       }
 
-      const data = await response.json();
-      console.log('Intention de paiement créée avec succès');
+      const paymentData = await paymentResponse.json();
+      console.log('Intention de paiement créée avec succès:', paymentData);
 
-      console.log('Confirmation du paiement avec Stripe...');
+      // Confirmation du paiement
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
-        data.clientSecret,
+        paymentData.clientSecret,
         {
           payment_method: {
             card: cardElement,
             billing_details: {
-              name: formData.firstName + ' ' + formData.lastName,
-              email: formData.email,
-              phone: formData.phone
+              name: `${formData.firstName} ${formData.lastName}`,
+              email: formData.email
             }
-          },
+          }
         }
       );
 
       if (stripeError) {
         console.error('Erreur Stripe:', stripeError);
         setError(stripeError.message || 'Une erreur est survenue lors du paiement.');
-      } else if (paymentIntent.status === 'succeeded') {
-        console.log('Paiement réussi !');
-        onSuccess();
+        setProcessing(false);
+        return;
       }
+
+      console.log('Paiement réussi:', paymentIntent);
+      onSuccess();
+      
     } catch (error) {
-      console.error('Erreur de paiement:', error);
-      setError('Une erreur est survenue lors du traitement du paiement. Veuillez réessayer.');
+      console.error('Erreur:', error);
+      setError(error instanceof Error ? error.message : 'Une erreur est survenue.');
     } finally {
       setProcessing(false);
     }
@@ -444,37 +455,13 @@ const Booking: React.FC = () => {
         throw new Error('Package not found');
       }
 
+      console.log('Données envoyées:', formData);
+
+      // Passer directement au paiement sans Google Script
       setFormData(initialFormState);
       setSelectedPackage(foundPackage);
       setShowPayment(true);
-
-      const dataToSend = new URLSearchParams();
-      dataToSend.append('firstName', formData.firstName.trim());
-      dataToSend.append('lastName', formData.lastName.trim());
-      dataToSend.append('address', formData.address.trim());
-      dataToSend.append('gender', formData.gender === 'male' ? 'Homme' : 'Femme');
-      dataToSend.append('age', formData.age);
-      dataToSend.append('nationality', formData.nationality.trim());
-      dataToSend.append('phone', formData.phone.trim());
-      dataToSend.append('email', formData.email.trim());
-      dataToSend.append('formule', foundPackage.name);
-      dataToSend.append('prix_base', foundPackage.price.toString());
-      dataToSend.append('type_chambre', selectedRoomType);
-      dataToSend.append('description_chambre', roomTypes.find(room => room.id === formData.roomType)?.description || '');
-      dataToSend.append('prix_total', totalPrice.toString());
-      dataToSend.append('message', formData.message.trim());
-
-      console.log('Données envoyées:', Object.fromEntries(dataToSend));
-
-      const urlWithParams = `${GOOGLE_SCRIPT_URL}?${dataToSend.toString()}`;
-      
-      await fetch(urlWithParams, {
-        method: 'GET',
-        mode: 'no-cors'
-      });
-
       setSubmitStatus('success');
-      setShowSuccess(true);
       
     } catch (error) {
       console.error('Error during form submission:', error);
@@ -482,6 +469,7 @@ const Booking: React.FC = () => {
         ...prev,
         submit: error instanceof Error ? error.message : 'An error occurred'
       }));
+      setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
     }
