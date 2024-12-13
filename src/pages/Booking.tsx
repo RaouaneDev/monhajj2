@@ -278,6 +278,7 @@ const Booking: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [currentStep, setCurrentStep] = useState<'form' | 'payment'>('form');
+  const [bookingType, setBookingType] = useState<'registration' | 'payment'>('registration');
 
   const handleNextStep = () => {
     if (validateForm()) {
@@ -424,6 +425,9 @@ const Booking: React.FC = () => {
     setBookingType(type);
     if (type === 'registration') {
       setShowPayment(false);
+      setCurrentStep('form');
+    } else {
+      setCurrentStep('payment');
     }
   };
 
