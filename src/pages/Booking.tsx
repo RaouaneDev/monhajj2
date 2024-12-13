@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadStripe, PaymentIntent } from '@stripe/stripe-js';
+import { StripeElementsOptions } from '@stripe/stripe-js';
 import {
   Elements,
   CardElement,
@@ -181,6 +181,15 @@ const Booking: React.FC = () => {
   const [selectedRoomType, setSelectedRoomType] = useState('');
   const [totalPrice, setTotalPrice] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -421,6 +430,8 @@ const Booking: React.FC = () => {
         ...prev,
         submit: error instanceof Error ? error.message : 'Failed to save booking'
       }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -834,12 +845,20 @@ const Booking: React.FC = () => {
         )}
 
         {showPayment && selectedPackage && (
-          <Elements stripe={stripePromise}>
-            <PaymentForm 
-              amount={totalPrice} 
-              onSuccess={handlePaymentSuccess}
-            />
-          </Elements>
+          <div className="mt-8">
+            {isLoading ? (
+              <div className="flex justify-center items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : (
+              <Elements stripe={stripePromise}>
+                <PaymentForm 
+                  amount={totalPrice} 
+                  onSuccess={handlePaymentSuccess}
+                />
+              </Elements>
+            )}
+          </div>
         )}
       </div>
     </div>
