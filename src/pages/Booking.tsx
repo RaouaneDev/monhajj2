@@ -53,17 +53,22 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
 
+  useEffect(() => {
+    if (!process.env.REACT_APP_STRIPE_PUBLIC_KEY) {
+      console.error('Stripe public key is not set');
+      setError('Configuration de paiement incorrecte. Veuillez contacter le support.');
+    }
+  }, []);
+
   const cardElementOptions = {
     style: {
       base: {
         color: '#374151',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         fontSize: '16px',
-        lineHeight: '1.5',
         '::placeholder': {
           color: '#9CA3AF'
-        },
-        padding: '0.75rem 1rem',
+        }
       },
       invalid: {
         color: '#EF4444',
@@ -76,29 +81,29 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
     event.preventDefault();
     
     if (!stripe || !elements) {
+      console.error('Stripe.js has not loaded yet');
+      setError('Le système de paiement n\'est pas encore chargé. Veuillez réessayer.');
       return;
     }
 
     setProcessing(true);
-    const cardElement = elements.getElement(CardElement);
-    
-    if (!cardElement) {
-      setError('Card element not found');
-      setProcessing(false);
-      return;
-    }
+    setError(null);
 
     try {
+      // Créer l'intention de paiement
       const response = await fetch('https://monhajj2backend.onrender.com/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ amount }),
+        body: JSON.stringify({ 
+          amount: deposit,
+          currency: 'eur'
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create payment intent');
+        throw new Error('Erreur lors de la création de l\'intention de paiement');
       }
 
       const data = await response.json();
@@ -107,7 +112,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
         data.clientSecret,
         {
           payment_method: {
-            card: cardElement,
+            card: elements.getElement(CardElement),
           },
         }
       );
@@ -159,7 +164,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
             <label className="block text-lg font-medium text-gray-700">
               Informations de carte
             </label>
-            <div className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus-within:ring-1 focus-within:ring-yellow-500 focus-within:border-yellow-500">
+            <div className="mt-1 block w-full p-4 border border-gray-300 bg-white rounded-md shadow-sm focus-within:ring-1 focus-within:ring-yellow-500 focus-within:border-yellow-500">
               <CardElement options={cardElementOptions} />
             </div>
             {error && (
@@ -285,43 +290,20 @@ const Booking: React.FC = () => {
     switch (name) {
       case 'firstName':
       case 'lastName':
-        const nameRegex = /^[A-Za-zÀ-ÿ\s-]+$/;
-        if (!nameRegex.test(value)) {
-          return 'Ce champ ne doit contenir que des lettres';
-        }
-        if (value.length < 2) {
-          return 'Ce champ doit contenir au moins 2 caractères';
-        }
-        break;
-      case 'nationality':
-        const nationalityRegex = /^[A-Za-zÀ-ÿ\s-]+$/;
-        if (!nationalityRegex.test(value)) {
-          return 'La nationalité ne doit contenir que des lettres';
-        }
-        if (value.length < 2) {
-          return 'Veuillez entrer votre nationalité (minimum 2 caractères)';
-        }
-        break;
+        return value.length >= 2 && /^[a-zA-ZÀ-ÿ\s-]+$/.test(value)
+          ? ''
+          : 'Ce champ doit contenir au moins 2 caractères et uniquement des lettres';
       case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-          return 'Veuillez entrer une adresse email valide';
-        }
-        break;
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+          ? ''
+          : 'Veuillez entrer une adresse email valide';
       case 'phone':
-        const phoneRegex = /^(\+33|0)[1-9](\d{2}){4}$/;
-        if (!phoneRegex.test(value.replace(/\s/g, ''))) {
-          return 'Veuillez entrer un numéro de téléphone valide (format français)';
-        }
-        break;
-      case 'age':
-        const age = parseInt(value);
-        if (isNaN(age) || age < 0 || age > 100) {
-          return 'L\'âge doit être compris entre 0 et 100 ans';
-        }
-        break;
+        return /^[0-9]{10}$/.test(value)
+          ? ''
+          : 'Le numéro de téléphone doit contenir 10 chiffres';
+      default:
+        return '';
     }
-    return '';
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -553,7 +535,6 @@ const Booking: React.FC = () => {
                   id="firstName"
                   name="firstName"
                   required
-                  pattern="[A-Za-zÀ-ÿ\s-]+"
                   value={formData.firstName}
                   onChange={handleInputChange}
                   className={`mt-1 block w-full py-3 px-4 border ${
@@ -562,7 +543,7 @@ const Booking: React.FC = () => {
                   placeholder="Votre prénom"
                 />
                 {errors.firstName && (
-                  <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>
+                  <p className="mt-2 text-sm text-red-500">{errors.firstName}</p>
                 )}
               </div>
 
@@ -575,7 +556,6 @@ const Booking: React.FC = () => {
                   id="lastName"
                   name="lastName"
                   required
-                  pattern="[A-Za-zÀ-ÿ\s-]+"
                   value={formData.lastName}
                   onChange={handleInputChange}
                   className={`mt-1 block w-full py-3 px-4 border ${
@@ -584,7 +564,7 @@ const Booking: React.FC = () => {
                   placeholder="Votre nom"
                 />
                 {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
+                  <p className="mt-2 text-sm text-red-500">{errors.lastName}</p>
                 )}
               </div>
             </div>
@@ -667,7 +647,6 @@ const Booking: React.FC = () => {
                 id="nationality"
                 name="nationality"
                 required
-                pattern="[A-Za-zÀ-ÿ\s-]+"
                 value={formData.nationality}
                 onChange={handleInputChange}
                 className={`mt-1 block w-full py-3 px-4 border ${
