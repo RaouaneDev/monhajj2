@@ -353,7 +353,6 @@ const Booking: React.FC = () => {
   const [showPayment, setShowPayment] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [showSuccess, setShowSuccess] = useState(false);
   const [bookingType, setBookingType] = useState<'registration' | 'payment'>('registration');
 
   useEffect(() => {
@@ -363,6 +362,18 @@ const Booking: React.FC = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const updateTotalPrice = useCallback((packageId: string, roomTypeId: string) => {
+    const selectedPkg = packages.find(p => p.id === packageId);
+    const selectedRoom = roomTypes.find(r => r.id === roomTypeId);
+    
+    if (selectedPkg && selectedRoom) {
+      const total = selectedPkg.price * selectedRoom.multiplier;
+      setTotalPrice(total);
+      setDeposit(total * 0.3); // 30% deposit
+      setRemainingAmount(total * 0.7); // 70% remaining
+    }
   }, []);
 
   const handlePackageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -376,10 +387,8 @@ const Booking: React.FC = () => {
   const handleRoomTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const roomType = event.target.value;
     setSelectedRoomType(roomType);
-    setFormData(prev => ({
-      ...prev,
-      roomType
-    }));
+    setFormData(prev => ({ ...prev, roomType }));
+    updateTotalPrice(formData.package, roomType);
   };
 
   const calculateTotal = useCallback(() => {
@@ -866,10 +875,10 @@ const Booking: React.FC = () => {
                 </p>
                 <div className="mt-6 bg-blue-50 p-4 rounded-lg">
                   <p className="text-blue-800 font-medium">
-                    Acompte requis (20%): {deposit.toLocaleString()}€
+                    Acompte requis (30%): {deposit.toLocaleString()}€
                   </p>
                   <p className="text-sm text-blue-600 mt-2">
-                    Un acompte minimum de 20% est requis pour confirmer votre réservation. 
+                    Un acompte minimum de 30% est requis pour confirmer votre réservation. 
                     Le reste du paiement pourra être effectué selon les modalités convenues avec notre agence.
                   </p>
                 </div>
