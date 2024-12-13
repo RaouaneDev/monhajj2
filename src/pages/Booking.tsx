@@ -137,13 +137,7 @@ const Booking: React.FC = () => {
     }));
 
     if (name === 'numberOfPersons') {
-      const priceInfo = updateTotalPrice(formData.package, formData.roomType);
-      if (priceInfo) {
-        const { total, deposit, remainingAmount } = priceInfo;
-        setTotalPrice(total);
-        setDeposit(deposit);
-        setRemainingAmount(remainingAmount);
-      }
+      updateTotalPrice(formData.package, formData.roomType);
     }
 
     const error = validateField(name, value);
