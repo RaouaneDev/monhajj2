@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import {
@@ -40,7 +40,6 @@ interface FormData {
   termsAccepted: boolean;
 }
 
-// Configuration des forfaits
 const packages: Package[] = [
   { 
     id: 'janvier2025',
@@ -68,23 +67,24 @@ const roomTypes: RoomType[] = [
   { id: 'double', name: 'Chambre Double', multiplier: 1.5, description: 'Chambre pour 2 personnes' },
 ];
 
-// URL de l'API
 const API_URL = process.env.REACT_APP_API_URL;
-console.log('API URL configured:', API_URL);
-
-// Assurez-vous que la clé publique est correctement chargée
 const STRIPE_PUBLIC_KEY = process.env.REACT_APP_STRIPE_PUBLIC_KEY;
-console.log('Stripe Public Key:', STRIPE_PUBLIC_KEY);
 
-if (!API_URL) {
-  console.error('API_URL not configured. Please check environment variables.');
-}
-
-if (!STRIPE_PUBLIC_KEY) {
-  console.error('STRIPE_PUBLIC_KEY not configured. Please check environment variables.');
-}
-
-const stripePromise = loadStripe(STRIPE_PUBLIC_KEY || '');
+const initialFormState: FormData = {
+  firstName: '',
+  lastName: '',
+  address: '',
+  gender: '',
+  age: '',
+  nationality: '',
+  phone: '',
+  email: '',
+  package: '',
+  roomType: '',
+  message: '',
+  numberOfPersons: '1',
+  termsAccepted: false
+};
 
 interface PaymentFormProps {
   amount: number;
@@ -250,44 +250,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
   );
 };
 
-const initialFormState: FormData = {
-  firstName: '',
-  lastName: '',
-  address: '',
-  gender: '',
-  age: '',
-  nationality: '',
-  phone: '',
-  email: '',
-  package: '',
-  roomType: '',
-  message: '',
-  numberOfPersons: '1',
-  termsAccepted: false
-};
-
 const Booking: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedRoomType, setSelectedRoomType] = useState<string>('');
-  const [bookingType, setBookingType] = useState<'registration' | 'payment'>('registration');
-  const [currentStep, setCurrentStep] = useState<'form' | 'payment'>('form');
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showPayment, setShowPayment] = useState(false);
-
-  const handleNextStep = () => {
-    if (validateForm()) {
-      setCurrentStep('payment');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const handlePreviousStep = () => {
-    setCurrentStep('form');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   const updateTotalPrice = useCallback((packageId: string, roomTypeId: string) => {
     const selectedPkg = packages.find(p => p.id === packageId);
@@ -296,22 +263,11 @@ const Booking: React.FC = () => {
     
     if (selectedPkg && selectedRoom) {
       const total = selectedPkg.price * selectedRoom.multiplier * numberOfPersons;
-      const deposit = total * 0.3; // 30% deposit
-      const remainingAmount = total * 0.7; // 70% remaining
+      const deposit = total * 0.3;
+      const remainingAmount = total * 0.7;
       return { total, deposit, remainingAmount };
     }
   }, [formData.numberOfPersons]);
-
-  const handlePackageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const packageId = event.target.value;
-    setFormData(prev => ({ ...prev, package: packageId }));
-  };
-
-  const handleRoomTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const roomType = event.target.value;
-    setSelectedRoomType(roomType);
-    setFormData(prev => ({ ...prev, roomType }));
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -320,7 +276,6 @@ const Booking: React.FC = () => {
       [name]: value
     }));
 
-    // Update total price when number of persons changes
     if (name === 'numberOfPersons') {
       const priceInfo = updateTotalPrice(formData.package, formData.roomType);
       if (priceInfo) {
@@ -335,6 +290,50 @@ const Booking: React.FC = () => {
       [name]: error
     }));
   };
+
+  const handlePackageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const packageId = event.target.value;
+    setFormData(prev => ({ ...prev, package: packageId }));
+  };
+
+  const handleRoomTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const roomType = event.target.value;
+    setFormData(prev => ({ ...prev, roomType }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    
+    if (!validateForm()) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    try {
+      navigate('/registration-success', {
+        state: {
+          formData,
+          packageDetails: packages.find(p => p.id === formData.package),
+          roomDetails: roomTypes.find(r => r.id === formData.roomType),
+          numberOfPersons: parseInt(formData.numberOfPersons)
+        }
+      });
+    } catch (error) {
+      console.error('Error during form submission:', error);
+    }
+  };
+
+  const handlePaymentSuccess = useCallback(() => {
+    navigate('/registration-success', {
+      state: {
+        formData,
+        packageDetails: packages.find(p => p.id === formData.package),
+        roomDetails: roomTypes.find(r => r.id === formData.roomType),
+        numberOfPersons: parseInt(formData.numberOfPersons),
+        paymentCompleted: true
+      }
+    });
+  }, [formData, navigate]);
 
   const validateField = (name: string, value: string): string => {
     switch (name) {
@@ -385,87 +384,6 @@ const Booking: React.FC = () => {
     return isValid;
   };
 
-  const handleBookingTypeChange = (type: 'registration' | 'payment') => {
-    if (type === 'registration') {
-      setCurrentStep('form');
-      setShowPayment(false);
-    } else {
-      setCurrentStep('payment');
-    }
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    
-    if (!validateForm()) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    try {
-      const registrationData = {
-        ...formData,
-        bookingType: 'registration',
-        packageDetails: packages.find(p => p.id === formData.package),
-        roomDetails: roomTypes.find(r => r.id === formData.roomType),
-        registrationDate: new Date().toISOString(),
-        numberOfPersons: parseInt(formData.numberOfPersons)
-      };
-      
-      console.log('Registration data:', registrationData);
-      navigate('/registration-success', {
-        state: {
-          formData,
-          packageDetails: packages.find(p => p.id === formData.package),
-          roomDetails: roomTypes.find(r => r.id === formData.roomType),
-          numberOfPersons: parseInt(formData.numberOfPersons)
-        }
-      });
-    } catch (error) {
-      console.error('Error during form submission:', error);
-    }
-  };
-
-  const handleShare = async () => {
-    const shareData = {
-      title: 'Réservation Monhajj',
-      text: 'Un ami vous invite à réserver votre Omra 2025 avec Monhajj ! 🕋✨',
-      url: window.location.href
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        navigator.clipboard.writeText(window.location.href);
-        alert('Lien copié ! Partagez-le avec vos amis intéressés par le voyage.');
-      }
-    } catch (error) {
-      console.error('Erreur lors du partage:', error);
-    }
-  };
-
-  const handlePaymentSuccess = useCallback(() => {
-    const registrationData = {
-      ...formData,
-      bookingType: 'payment',
-      packageDetails: packages.find(p => p.id === formData.package),
-      roomDetails: roomTypes.find(r => r.id === formData.roomType),
-      registrationDate: new Date().toISOString(),
-      numberOfPersons: parseInt(formData.numberOfPersons)
-    };
-    
-    navigate('/registration-success', {
-      state: {
-        formData,
-        packageDetails: packages.find(p => p.id === formData.package),
-        roomDetails: roomTypes.find(r => r.id === formData.roomType),
-        numberOfPersons: parseInt(formData.numberOfPersons),
-        paymentCompleted: true
-      }
-    });
-  }, [formData, navigate]);
-
   return (
     <div className="relative min-h-screen bg-gray-50">
       {/* Bouton de retour en haut fixe */}
@@ -501,12 +419,10 @@ const Booking: React.FC = () => {
 
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-yellow-600 mb-3">
-            {currentStep === 'form' ? 'Réservez Votre Voyage Spirituel' : 'Finaliser Votre Réservation'}
+            Réservez Votre Voyage Spirituel
           </h1>
           <p className="text-gray-600 mb-2">
-            {currentStep === 'form' 
-              ? 'Laissez-nous vous accompagner dans cette expérience unique et inoubliable' 
-              : "Plus qu'une étape pour confirmer votre voyage"}
+            Laissez-nous vous accompagner dans cette expérience unique et inoubliable
           </p>
         </div>
 
@@ -514,18 +430,14 @@ const Booking: React.FC = () => {
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
-              <div className={`rounded-full h-8 w-8 flex items-center justify-center ${
-                currentStep === 'form' ? 'bg-yellow-600 text-white' : 'bg-gray-200'
-              }`}>
+              <div className="rounded-full h-8 w-8 flex items-center justify-center bg-yellow-600 text-white">
                 1
               </div>
               <span className="ml-2 text-sm">Informations</span>
             </div>
             <div className="h-0.5 w-16 bg-gray-300"></div>
             <div className="flex items-center">
-              <div className={`rounded-full h-8 w-8 flex items-center justify-center ${
-                currentStep === 'payment' ? 'bg-yellow-600 text-white' : 'bg-gray-200'
-              }`}>
+              <div className="rounded-full h-8 w-8 flex items-center justify-center bg-gray-200">
                 2
               </div>
               <span className="ml-2 text-sm">Paiement</span>
@@ -889,19 +801,19 @@ const Booking: React.FC = () => {
           <div className="mt-4 text-center">
             <button
               type="button"
-              onClick={handleShare}
+              onClick={() => setShowPayment(true)}
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
             >
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
               </svg>
-              Partager
+              Payer maintenant
             </button>
           </div>
 
           {showPayment && (
             <div className="mt-8">
-              <Elements stripe={stripePromise}>
+              <Elements stripe={loadStripe(STRIPE_PUBLIC_KEY || '')}>
                 {(() => {
                   const priceInfo = updateTotalPrice(formData.package, formData.roomType);
                   if (priceInfo) {
