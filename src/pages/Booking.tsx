@@ -54,6 +54,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
     }
 
     setProcessing(true);
+    const cardElement = elements.getElement(CardElement);
+    
+    if (!cardElement) {
+      setError('Card element not found');
+      setProcessing(false);
+      return;
+    }
 
     try {
       // Créer un payment intent côté serveur (à implémenter)
@@ -71,7 +78,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
         data.clientSecret,
         {
           payment_method: {
-            card: elements.getElement(CardElement),
+            card: cardElement,
           },
         }
       );
