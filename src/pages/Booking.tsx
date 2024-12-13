@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { StripeElementsOptions } from '@stripe/stripe-js';
+import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import {
   Elements,
   CardElement,
@@ -38,7 +38,7 @@ const roomTypes = [
 
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYibyVKJiUILauZcrVqcFm1I20S4-_DKIS2LYcog38VWrj8KDkJ_MO2OzSR87_f8X_/exec';
 
-const stripePromise = loadStripe('votre_cle_publique_stripe');
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || '');
 
 interface PaymentFormProps {
   amount: number;
