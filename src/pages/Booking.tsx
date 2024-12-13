@@ -49,7 +49,32 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
-  const [processing, setProcessing] = useState<boolean>(false);
+  const [processing, setProcessing] = useState(false);
+
+  const cardElementOptions = {
+    style: {
+      base: {
+        color: '#32325d',
+        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+        fontSmoothing: 'antialiased',
+        fontSize: '16px',
+        '::placeholder': {
+          color: '#aab7c4'
+        },
+        backgroundColor: '#fff',
+        padding: '10px 12px',
+      },
+      invalid: {
+        color: '#fa755a',
+        iconColor: '#fa755a'
+      }
+    },
+    classes: {
+      base: 'stripe-element',
+      focus: 'stripe-element--focus',
+      invalid: 'stripe-element--invalid'
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -110,32 +135,43 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="payment-form">
-      {error && <div className="error-message">{error}</div>}
-      <CardElement
-        options={{
-          style: {
-            base: {
-              fontSize: '16px',
-              color: '#424770',
-              '::placeholder': {
-                color: '#aab7c4',
-              },
-            },
-            invalid: {
-              color: '#9e2146',
-            },
-          },
-        }}
-      />
-      <button
-        type="submit"
-        disabled={!stripe || processing}
-        className="btn btn-primary mt-4"
-      >
-        {processing ? 'Processing...' : 'Pay Now'}
-      </button>
-    </form>
+    <div className="max-w-md mx-auto">
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">Paiement sécurisé</h3>
+        <div className="mb-4">
+          <p className="text-gray-600 mb-2">Montant à payer : {amount}€</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="p-3 border rounded-md bg-gray-50">
+            <CardElement options={cardElementOptions} className="p-2" />
+          </div>
+          {error && (
+            <div className="text-red-500 text-sm mt-2">
+              {error}
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={!stripe || processing}
+            className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 ${
+              processing ? 'opacity-75 cursor-not-allowed' : ''
+            }`}
+          >
+            {processing ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Traitement en cours...
+              </span>
+            ) : (
+              'Payer maintenant'
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 

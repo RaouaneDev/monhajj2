@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import kaabaLogo from '../assets/kaaba-logo.svg';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,7 +11,8 @@ const Navbar: React.FC = () => {
       <div className="container-custom">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center space-x-3">
+              <img src={kaabaLogo} alt="Kaaba Logo" className="h-10 w-10" />
               <span className="text-2xl font-bold text-primary">RAOUANE</span>
             </Link>
           </div>

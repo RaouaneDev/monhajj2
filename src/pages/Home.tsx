@@ -5,7 +5,6 @@ import FlipCard from '../components/FlipCard';
 const Home: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  // Gérer l'affichage du bouton de retour en haut
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300);
@@ -15,7 +14,6 @@ const Home: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fonction pour remonter en haut de la page
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -39,10 +37,10 @@ const Home: React.FC = () => {
               Votre Voyage Spirituel Commence Ici
             </h1>
             <p className="text-xl mb-8">
-              Découvrez nos forfaits Hajj et Omra personnalisés pour une expérience inoubliable
+              Découvrez nos forfaits Omra 2025 et réservez votre voyage dès maintenant.
             </p>
-            <Link to="/packages" className="btn-primary text-lg">
-              Explorer Nos Forfaits
+            <Link to="/packages" className="btn-primary">
+              Voir les Forfaits
             </Link>
           </div>
         </div>

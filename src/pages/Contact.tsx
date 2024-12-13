@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+}
+
 const Contact: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     phone: '',
@@ -9,9 +17,15 @@ const Contact: React.FC = () => {
     message: ''
   });
 
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Logique d'envoi du formulaire à implémenter
     console.log('Formulaire soumis:', formData);
   };
 
@@ -107,7 +121,7 @@ const Contact: React.FC = () => {
                   id="name"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -121,7 +135,7 @@ const Contact: React.FC = () => {
                   id="email"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -135,7 +149,7 @@ const Contact: React.FC = () => {
                   id="phone"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -147,7 +161,7 @@ const Contact: React.FC = () => {
                   id="subject"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   value={formData.subject}
-                  onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                  onChange={handleInputChange}
                   required
                 >
                   <option value="">Sélectionnez un sujet</option>
@@ -167,7 +181,7 @@ const Contact: React.FC = () => {
                   rows={4}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary resize-none"
                   value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  onChange={handleInputChange}
                   required
                 ></textarea>
               </div>
