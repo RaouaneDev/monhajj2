@@ -52,6 +52,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: ''
+  });
 
   useEffect(() => {
     if (!process.env.REACT_APP_STRIPE_PUBLIC_KEY) {
@@ -75,6 +81,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
         iconColor: '#EF4444'
       }
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -166,6 +180,53 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
+            <label className="block text-lg font-medium text-gray-700">
+              Informations de facturation
+            </label>
+            <div className="mb-4">
+              <input
+                type="text"
+                name="firstName"
+                placeholder="Prénom"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Nom"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Téléphone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
             <label className="block text-lg font-medium text-gray-700">
               Informations de carte
             </label>
