@@ -9,7 +9,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
-import { Box, Typography, Button, Container, Paper } from '@mui/material';
+import { Box, Typography, Button, Container, Paper, CircularProgress } from '@mui/material';
 import colors from '../styles/colors';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY!);
@@ -26,11 +26,42 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
   const navigate = useNavigate();
   const [error, setError] = React.useState<string | null>(null);
   const [processing, setProcessing] = React.useState(false);
+  const [clientSecret, setClientSecret] = React.useState<string | null>(null);
   const [isFormComplete, setIsFormComplete] = React.useState({
     cardNumber: false,
     cardExpiry: false,
     cardCvc: false
   });
+
+  React.useEffect(() => {
+    // Créer l'intention de paiement lors du chargement du composant
+    const createPaymentIntent = async () => {
+      try {
+        const response = await fetch('https://monhajj2backend.onrender.com/create-payment-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: deposit, // On utilise le montant de l'acompte
+            currency: 'eur',
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de la création du payment intent');
+        }
+
+        const data = await response.json();
+        setClientSecret(data.clientSecret);
+      } catch (err: any) {
+        setError(err.message);
+        console.error('Erreur:', err);
+      }
+    };
+
+    createPaymentIntent();
+  }, [deposit]);
 
   const handleCardChange = (event: any, field: string) => {
     setIsFormComplete(prev => ({
@@ -50,7 +81,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || !clientSecret) return;
 
     if (!validateForm()) {
       return;
@@ -62,113 +93,158 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
     try {
       const cardElement = elements.getElement(CardNumberElement);
       if (!cardElement) {
-        setError('Erreur: Impossible de traiter le paiement');
-        return;
+        throw new Error('Erreur: Impossible de traiter le paiement');
       }
 
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-      });
+      // Confirmer le paiement avec Stripe
+      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+          },
+        }
+      );
 
-      if (error) {
-        setError(error.message || 'Une erreur est survenue');
-        return;
+      if (confirmError) {
+        throw new Error(confirmError.message);
       }
 
-      // Stocker les informations de paiement dans le localStorage
-      localStorage.setItem('paymentInfo', JSON.stringify({
-        paymentMethodId: paymentMethod.id,
-        amount: amount,
-        deposit: deposit,
-        remainingAmount: remainingAmount,
-        timestamp: new Date().toISOString()
-      }));
-
-      // Ici, vous devriez normalement appeler votre API backend
-      console.log('Payment Method:', paymentMethod);
-      
-      // Rediriger vers une page de confirmation avec les détails du paiement
-      navigate('/payment-success', {
-        state: {
-          paymentMethodId: paymentMethod.id,
+      if (paymentIntent.status === 'succeeded') {
+        // Stocker les informations de paiement dans le localStorage
+        localStorage.setItem('paymentInfo', JSON.stringify({
+          paymentIntentId: paymentIntent.id,
           amount: amount,
           deposit: deposit,
-          remainingAmount: remainingAmount
-        }
-      });
+          remainingAmount: remainingAmount,
+          timestamp: new Date().toISOString()
+        }));
+
+        // Rediriger vers la page de succès
+        navigate('/payment-success', {
+          state: {
+            paymentIntentId: paymentIntent.id,
+            amount: amount,
+            deposit: deposit,
+            remainingAmount: remainingAmount
+          }
+        });
+      }
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue');
+      setError(err.message || 'Une erreur est survenue lors du paiement');
     } finally {
       setProcessing(false);
     }
   };
 
-  const cardStyle = {
-    style: {
-      base: {
-        fontSize: '16px',
-        color: '#424770',
-        '::placeholder': {
-          color: '#aab7c4',
-        },
-      },
-      invalid: {
-        color: '#9e2146',
-      },
-    },
-  };
-
   return (
-    <form onSubmit={handleSubmit}>
+    <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Détails du paiement
+        <Typography variant="h6" sx={{ color: colors.text.primary, mb: 1 }}>
+          Informations de paiement
         </Typography>
-        <Typography variant="body1" gutterBottom>
-          Montant total : {amount}€
+        <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+          Montant total: {amount}€
         </Typography>
-        <Typography variant="body1" gutterBottom>
-          Acompte à payer maintenant : {deposit}€
+        <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+          Acompte à payer maintenant: {deposit}€
         </Typography>
-        <Typography variant="body1" gutterBottom>
-          Reste à payer : {remainingAmount}€
+        <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+          Reste à payer plus tard: {remainingAmount}€
         </Typography>
       </Box>
 
       <Box sx={{ mb: 2 }}>
-        <Typography variant="body2" gutterBottom>
+        <Typography variant="subtitle2" sx={{ mb: 1, color: colors.text.primary }}>
           Numéro de carte
         </Typography>
         <Paper
           variant="outlined"
-          sx={{ p: 2, mb: 2 }}
+          sx={{
+            p: 2,
+            bgcolor: colors.background.paper,
+            border: `1px solid ${colors.gray.main}`,
+          }}
         >
-          <CardNumberElement options={cardStyle} onChange={(e) => handleCardChange(e, 'cardNumber')} />
+          <CardNumberElement
+            onChange={(e) => handleCardChange(e, 'cardNumber')}
+            options={{
+              style: {
+                base: {
+                  fontSize: '16px',
+                  color: colors.text.primary,
+                  '::placeholder': {
+                    color: colors.text.disabled,
+                  },
+                },
+              },
+            }}
+          />
         </Paper>
+      </Box>
 
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="body2" gutterBottom>
-              Date d'expiration
-            </Typography>
-            <Paper variant="outlined" sx={{ p: 2 }}>
-              <CardExpiryElement options={cardStyle} onChange={(e) => handleCardChange(e, 'cardExpiry')} />
-            </Paper>
-          </Box>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="body2" gutterBottom>
-              CVC
-            </Typography>
-            <Paper variant="outlined" sx={{ p: 2 }}>
-              <CardCvcElement options={cardStyle} onChange={(e) => handleCardChange(e, 'cardCvc')} />
-            </Paper>
-          </Box>
+      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, color: colors.text.primary }}>
+            Date d'expiration
+          </Typography>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 2,
+              bgcolor: colors.background.paper,
+              border: `1px solid ${colors.gray.main}`,
+            }}
+          >
+            <CardExpiryElement
+              onChange={(e) => handleCardChange(e, 'cardExpiry')}
+              options={{
+                style: {
+                  base: {
+                    fontSize: '16px',
+                    color: colors.text.primary,
+                    '::placeholder': {
+                      color: colors.text.disabled,
+                    },
+                  },
+                },
+              }}
+            />
+          </Paper>
+        </Box>
+
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, color: colors.text.primary }}>
+            CVC
+          </Typography>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 2,
+              bgcolor: colors.background.paper,
+              border: `1px solid ${colors.gray.main}`,
+            }}
+          >
+            <CardCvcElement
+              onChange={(e) => handleCardChange(e, 'cardCvc')}
+              options={{
+                style: {
+                  base: {
+                    fontSize: '16px',
+                    color: colors.text.primary,
+                    '::placeholder': {
+                      color: colors.text.disabled,
+                    },
+                  },
+                },
+              }}
+            />
+          </Paper>
         </Box>
       </Box>
 
       {error && (
-        <Typography color="error" sx={{ mt: 2, mb: 2 }}>
+        <Typography color="error" sx={{ mb: 2 }}>
           {error}
         </Typography>
       )}
@@ -176,38 +252,52 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
       <Button
         type="submit"
         variant="contained"
-        disabled={processing || !stripe}
+        fullWidth
+        disabled={processing || !clientSecret}
         sx={{
-          mt: 3,
-          backgroundColor: colors.primary,
+          bgcolor: colors.primary,
+          color: colors.background.default,
           '&:hover': {
-            backgroundColor: colors.primaryDark,
+            bgcolor: colors.primaryDark,
           },
+          height: 48,
         }}
       >
-        {processing ? 'Traitement...' : 'Payer maintenant'}
+        {processing ? (
+          <CircularProgress size={24} sx={{ color: colors.background.default }} />
+        ) : (
+          `Payer ${deposit}€`
+        )}
       </Button>
-    </form>
+    </Box>
   );
 };
 
-const Payment = () => {
+const Payment: React.FC = () => {
   const location = useLocation();
-  const { amount, deposit, remainingAmount } = location.state || {
-    amount: 0,
-    deposit: 0,
-    remainingAmount: 0
-  };
+  const { amount, deposit, remainingAmount } = location.state || {};
+
+  if (!amount || !deposit || remainingAmount === undefined) {
+    return (
+      <Container maxWidth="sm">
+        <Typography variant="h6" color="error">
+          Informations de paiement manquantes
+        </Typography>
+      </Container>
+    );
+  }
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Elements stripe={stripePromise}>
-        <PaymentForm 
-          amount={amount}
-          deposit={deposit}
-          remainingAmount={remainingAmount}
-        />
-      </Elements>
+    <Container maxWidth="sm">
+      <Box sx={{ py: 4 }}>
+        <Elements stripe={stripePromise}>
+          <PaymentForm
+            amount={amount}
+            deposit={deposit}
+            remainingAmount={remainingAmount}
+          />
+        </Elements>
+      </Box>
     </Container>
   );
 };
