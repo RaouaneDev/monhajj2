@@ -555,7 +555,7 @@ const Booking: React.FC = () => {
           <p className="text-gray-600 mb-2">
             {currentStep === 'form' 
               ? 'Laissez-nous vous accompagner dans cette expérience unique et inoubliable' 
-              : 'Plus qu'une étape pour confirmer votre voyage'}
+              : "Plus qu'une étape pour confirmer votre voyage"}
           </p>
         </div>
 
