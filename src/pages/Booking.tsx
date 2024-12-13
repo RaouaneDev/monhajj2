@@ -368,37 +368,245 @@ const Booking: React.FC = () => {
 
   if (showSuccessMessage) {
     return (
-      <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-yellow-600 mb-3">
+      <Container maxWidth="sm" sx={{ py: 4, textAlign: 'center' }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" gutterBottom sx={{ color: colors.primary }}>
             Merci pour votre inscription !
-          </h1>
-          <p className="text-gray-600 mb-2">
+          </Typography>
+          <Typography variant="body1" paragraph>
             Votre demande de réservation a été enregistrée avec succès.
-          </p>
-        </div>
-        <p className="text-lg font-semibold text-yellow-light">
-          Prix total: {totalPrice}€
-        </p>
-        <p className="text-lg font-semibold text-yellow-light">
-          Acompte à payer: {deposit}€
-        </p>
-        <p className="text-lg font-semibold text-yellow-light">
-          Reste à payer: {remainingAmount}€
-        </p>
-        <button
-          type="button"
+          </Typography>
+          <Typography variant="body1" paragraph>
+            Montant total : {totalPrice}€
+            <br />
+            Acompte à payer : {deposit}€
+            <br />
+            Reste à payer : {remainingAmount}€
+          </Typography>
+        </Box>
+        
+        <Button
+          variant="contained"
           onClick={handleProceedToPayment}
-          className="w-full bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+          sx={{
+            backgroundColor: colors.primary,
+            '&:hover': {
+              backgroundColor: colors.primaryDark,
+            },
+          }}
         >
           Procéder au paiement
-        </button>
-      </div>
+        </Button>
+      </Container>
     );
   }
 
   return (
-    // ... reste du code du formulaire existant ...
+    <div className="relative min-h-screen bg-gray-50">
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className="fixed bottom-8 right-8 z-50 p-3 rounded-full bg-yellow-600 text-white shadow-lg transition-opacity duration-300 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+        aria-label="Retour en haut"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+      </button>
+
+      <div className="max-w-3xl mx-auto bg-gray-100 rounded-lg shadow-xl p-6 sm:p-8 relative">
+        <button
+          onClick={() => navigate('/')}
+          className="mb-6 flex items-center text-yellow-500 hover:text-yellow-600 transition-colors duration-200"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Retour à l'accueil
+        </button>
+
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-yellow-600 mb-3">
+            Réservez Votre Voyage Spirituel
+          </h1>
+          <p className="text-gray-600 mb-2">
+            Laissez-nous vous accompagner dans cette expérience unique et inoubliable
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  Prénom
+                </label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  Nom
+                </label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Téléphone
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="package" className="block text-sm font-medium text-gray-700">
+                Forfait
+              </label>
+              <select
+                id="package"
+                name="package"
+                value={formData.package}
+                onChange={handlePackageChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                required
+              >
+                <option value="">Sélectionnez un forfait</option>
+                {packages.map((pkg) => (
+                  <option key={pkg.id} value={pkg.id}>
+                    {pkg.name} - {pkg.price}€
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="roomType" className="block text-sm font-medium text-gray-700">
+                Type de chambre
+              </label>
+              <select
+                id="roomType"
+                name="roomType"
+                value={formData.roomType}
+                onChange={handleRoomTypeChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                required
+              >
+                <option value="">Sélectionnez un type de chambre</option>
+                {roomTypes.map((room) => (
+                  <option key={room.id} value={room.id}>
+                    {room.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="numberOfPersons" className="block text-sm font-medium text-gray-700">
+                Nombre de personnes
+              </label>
+              <select
+                id="numberOfPersons"
+                name="numberOfPersons"
+                value={formData.numberOfPersons}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                required
+              >
+                {[1, 2, 3, 4].map((num) => (
+                  <option key={num} value={num}>
+                    {num} {num === 1 ? 'personne' : 'personnes'}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+                Message (optionnel)
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                rows={4}
+                value={formData.message}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+              />
+            </div>
+
+            <div className="flex items-center">
+              <input
+                id="termsAccepted"
+                name="termsAccepted"
+                type="checkbox"
+                checked={formData.termsAccepted}
+                onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
+                className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+                required
+              />
+              <label htmlFor="termsAccepted" className="ml-2 block text-sm text-gray-700">
+                J'accepte les conditions d'inscription
+              </label>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <button
+              type="submit"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+            >
+              Valider l'inscription
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 
