@@ -322,8 +322,11 @@ const Booking: React.FC = () => {
 
     // Update total price when number of persons changes
     if (name === 'numberOfPersons') {
-      const { total, deposit, remainingAmount } = updateTotalPrice(formData.package, formData.roomType);
-      console.log(total, deposit, remainingAmount);
+      const priceInfo = updateTotalPrice(formData.package, formData.roomType);
+      if (priceInfo) {
+        const { total, deposit, remainingAmount } = priceInfo;
+        console.log(total, deposit, remainingAmount);
+      }
     }
 
     const error = validateField(name, value);
@@ -796,11 +799,11 @@ const Booking: React.FC = () => {
             {updateTotalPrice(formData.package, formData.roomType) && (
               <div className="mt-4 p-4 bg-gray-200 rounded-md">
                 <p className="text-lg font-semibold text-yellow-light">
-                  Prix total: {updateTotalPrice(formData.package, formData.roomType).total.toLocaleString()}€
+                  Prix total: {updateTotalPrice(formData.package, formData.roomType)?.total.toLocaleString()}€
                 </p>
                 <div className="mt-6 bg-blue-50 p-4 rounded-lg">
                   <p className="text-blue-800 font-medium">
-                    Acompte requis (30%): {updateTotalPrice(formData.package, formData.roomType).deposit.toLocaleString()}€
+                    Acompte requis (30%): {updateTotalPrice(formData.package, formData.roomType)?.deposit.toLocaleString()}€
                   </p>
                   <p className="text-sm text-blue-600 mt-2">
                     Un acompte minimum de 30% est requis pour confirmer votre réservation. 
@@ -900,9 +903,9 @@ const Booking: React.FC = () => {
             <div className="mt-8">
               <Elements stripe={stripePromise}>
                 <PaymentForm 
-                  amount={updateTotalPrice(formData.package, formData.roomType).total} 
-                  deposit={updateTotalPrice(formData.package, formData.roomType).deposit}
-                  remainingAmount={updateTotalPrice(formData.package, formData.roomType).remainingAmount}
+                  amount={updateTotalPrice(formData.package, formData.roomType)?.total} 
+                  deposit={updateTotalPrice(formData.package, formData.roomType)?.deposit}
+                  remainingAmount={updateTotalPrice(formData.package, formData.roomType)?.remainingAmount}
                   onSuccess={handlePaymentSuccess}
                 />
               </Elements>
