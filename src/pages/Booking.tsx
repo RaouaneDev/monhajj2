@@ -902,12 +902,20 @@ const Booking: React.FC = () => {
           {showPayment && (
             <div className="mt-8">
               <Elements stripe={stripePromise}>
-                <PaymentForm 
-                  amount={updateTotalPrice(formData.package, formData.roomType)?.total} 
-                  deposit={updateTotalPrice(formData.package, formData.roomType)?.deposit}
-                  remainingAmount={updateTotalPrice(formData.package, formData.roomType)?.remainingAmount}
-                  onSuccess={handlePaymentSuccess}
-                />
+                {(() => {
+                  const priceInfo = updateTotalPrice(formData.package, formData.roomType);
+                  if (priceInfo) {
+                    return (
+                      <PaymentForm 
+                        amount={priceInfo.total}
+                        deposit={priceInfo.deposit}
+                        remainingAmount={priceInfo.remainingAmount}
+                        onSuccess={handlePaymentSuccess}
+                      />
+                    );
+                  }
+                  return null;
+                })()}
               </Elements>
             </div>
           )}
