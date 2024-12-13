@@ -36,16 +36,25 @@ const roomTypes = [
   { id: 'double', name: 'Chambre Double', multiplier: 1.5, description: 'Chambre pour 2 personnes' },
 ];
 
-// URL de l'API avec fallback
-const API_URL = process.env.REACT_APP_API_URL || 'https://monhajj2backend.onrender.com';
+// URL de l'API
+const API_URL = process.env.REACT_APP_API_URL;
 console.log('API URL configured:', API_URL);
 
 // Assurez-vous que la clé publique est correctement chargée
-console.log('Stripe Public Key:', process.env.REACT_APP_STRIPE_PUBLIC_KEY);
+const STRIPE_PUBLIC_KEY = process.env.REACT_APP_STRIPE_PUBLIC_KEY;
+console.log('Stripe Public Key:', STRIPE_PUBLIC_KEY);
+
+if (!API_URL) {
+  console.error('API_URL not configured. Please check environment variables.');
+}
+
+if (!STRIPE_PUBLIC_KEY) {
+  console.error('STRIPE_PUBLIC_KEY not configured. Please check environment variables.');
+}
 
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYibyVKJiUILauZcrVqcFm1I20S4-_DKIS2LYcog38VWrj8KDkJ_MO2OzSR87_f8X_/exec';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || '');
+const stripePromise = loadStripe(STRIPE_PUBLIC_KEY || '');
 
 interface PaymentFormProps {
   amount: number;
@@ -67,7 +76,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
   });
 
   useEffect(() => {
-    if (!process.env.REACT_APP_STRIPE_PUBLIC_KEY) {
+    if (!STRIPE_PUBLIC_KEY) {
       console.error('Stripe public key is not set');
       setError('Configuration de paiement incorrecte. Veuillez contacter le support.');
     }
