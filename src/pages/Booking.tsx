@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { loadStripe, PaymentIntent } from '@stripe/stripe-js';
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js';
 
 // Configuration des forfaits
 const packages = [
@@ -105,33 +110,30 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-8">
-      <div className="mb-4">
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: '16px',
-                color: '#424770',
-                '::placeholder': {
-                  color: '#aab7c4',
-                },
-              },
-              invalid: {
-                color: '#9e2146',
+    <form onSubmit={handleSubmit} className="payment-form">
+      {error && <div className="error-message">{error}</div>}
+      <CardElement
+        options={{
+          style: {
+            base: {
+              fontSize: '16px',
+              color: '#424770',
+              '::placeholder': {
+                color: '#aab7c4',
               },
             },
-          }}
-          className="p-3 border rounded-md"
-        />
-      </div>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+            invalid: {
+              color: '#9e2146',
+            },
+          },
+        }}
+      />
       <button
         type="submit"
         disabled={!stripe || processing}
-        className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark disabled:opacity-50"
+        className="btn btn-primary mt-4"
       >
-        {processing ? 'Traitement...' : `Payer ${amount}€`}
+        {processing ? 'Processing...' : 'Pay Now'}
       </button>
     </form>
   );
@@ -386,18 +388,45 @@ const Booking: React.FC = () => {
     }
   };
 
-  const handlePaymentSuccess = async (paymentIntent) => {
-    // Envoyer les détails de la réservation à Google Sheets
-    // Votre code existant pour Google Sheets...
+  const handlePaymentSuccess = async () => {
+    try {
+      // Envoyer les détails de la réservation à Google Sheets
+      const dataToSend = new URLSearchParams();
+      
+      if (!selectedPackage) {
+        throw new Error('No package selected');
+      }
 
-    // Rediriger vers une page de confirmation
-    navigate('/confirmation', { 
-      state: { 
-        paymentId: paymentIntent.id,
-        amount: paymentIntent.amount,
-        // autres détails de la réservation...
-      } 
-    });
+      dataToSend.append('firstName', formData.firstName.trim());
+      dataToSend.append('lastName', formData.lastName.trim());
+      dataToSend.append('birthDate', formData.birthDate);
+      dataToSend.append('nationality', formData.nationality.trim());
+      dataToSend.append('phone', formData.phone.trim());
+      dataToSend.append('email', formData.email.trim());
+      dataToSend.append('formule', selectedPackage.name);
+      dataToSend.append('prix_base', selectedPackage.price.toString());
+      dataToSend.append('type_chambre', selectedRoomType);
+      dataToSend.append('prix_total', totalPrice);
+      dataToSend.append('message', formData.message.trim());
+
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: dataToSend,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save booking details');
+      }
+
+      setShowSuccess(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      console.error('Error saving booking:', error);
+      setErrors(prev => ({
+        ...prev,
+        submit: error instanceof Error ? error.message : 'Failed to save booking'
+      }));
+    }
   };
 
   return (
