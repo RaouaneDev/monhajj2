@@ -134,6 +134,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({ 
           amount: deposit,
@@ -143,12 +144,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
             lastName: formData.lastName,
             email: formData.email
           }
-        }),
-        credentials: 'include'
+        })
       });
 
       if (!paymentResponse.ok) {
         const errorText = await paymentResponse.text();
+        console.error('Réponse du serveur:', paymentResponse.status);
         console.error('Erreur serveur:', errorText);
         throw new Error(`Erreur lors de la création de l'intention de paiement: ${paymentResponse.status} ${errorText}`);
       }
