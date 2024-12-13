@@ -921,8 +921,9 @@ const Booking: React.FC = () => {
                 type="button"
                 onClick={handleNextStep}
                 className="w-full bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                disabled={isSubmitting}
               >
-                Continuer vers le paiement
+                {isSubmitting ? 'Chargement...' : 'Continuer vers le paiement'}
               </button>
             ) : (
               <div className="w-full flex gap-4">
@@ -930,14 +931,16 @@ const Booking: React.FC = () => {
                   type="button"
                   onClick={handlePreviousStep}
                   className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  disabled={isSubmitting}
                 >
                   Retour aux informations
                 </button>
                 <button
                   type="submit"
                   className="flex-1 bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                  disabled={isSubmitting}
                 >
-                  Procéder au paiement
+                  {isSubmitting ? 'Traitement en cours...' : 'Procéder au paiement'}
                 </button>
               </div>
             )}
