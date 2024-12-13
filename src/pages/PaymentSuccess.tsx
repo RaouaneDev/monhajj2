@@ -15,52 +15,52 @@ const PaymentSuccess: React.FC = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 8 }}>
-      <Paper elevation={3} sx={{ p: 4, bgcolor: colors.dark[100] }}>
+      <Paper elevation={3} sx={{ p: 4, bgcolor: colors.background.paper }}>
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <CheckCircleIcon sx={{ fontSize: 64, color: 'success.main' }} />
-          <Typography variant="h4" sx={{ mt: 2, color: colors.yellow.light }}>
+          <CheckCircleIcon sx={{ fontSize: 64, color: colors.state.success }} />
+          <Typography variant="h4" sx={{ mt: 2, color: colors.primary }}>
             Paiement Confirmé !
           </Typography>
-          <Typography variant="body1" sx={{ mt: 2, color: colors.grey[300] }}>
+          <Typography variant="body1" sx={{ mt: 2, color: colors.text.secondary }}>
             Merci pour votre réservation. Votre voyage est maintenant confirmé.
           </Typography>
         </Box>
 
         {paymentInfo && (
-          <Box sx={{ mt: 4, pt: 4, borderTop: 1, borderColor: 'grey.700' }}>
-            <Typography variant="h5" sx={{ mb: 3, color: colors.yellow.light }}>
+          <Box sx={{ mt: 4, pt: 4, borderTop: 1, borderColor: colors.gray.main }}>
+            <Typography variant="h5" sx={{ mb: 3, color: colors.primary }}>
               Détails du Paiement
             </Typography>
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1" sx={{ color: colors.grey[300] }}>
+                <Typography variant="subtitle1" sx={{ color: colors.text.secondary }}>
                   Montant Total:
                 </Typography>
-                <Typography variant="body1" sx={{ color: 'white', mt: 1 }}>
+                <Typography variant="body1" sx={{ color: colors.text.primary, mt: 1 }}>
                   {paymentInfo.amount}€
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1" sx={{ color: colors.grey[300] }}>
+                <Typography variant="subtitle1" sx={{ color: colors.text.secondary }}>
                   Acompte Payé:
                 </Typography>
-                <Typography variant="body1" sx={{ color: 'white', mt: 1 }}>
+                <Typography variant="body1" sx={{ color: colors.text.primary, mt: 1 }}>
                   {paymentInfo.deposit}€
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1" sx={{ color: colors.grey[300] }}>
+                <Typography variant="subtitle1" sx={{ color: colors.text.secondary }}>
                   Reste à Payer:
                 </Typography>
-                <Typography variant="body1" sx={{ color: 'white', mt: 1 }}>
+                <Typography variant="body1" sx={{ color: colors.text.primary, mt: 1 }}>
                   {paymentInfo.remainingAmount}€
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1" sx={{ color: colors.grey[300] }}>
+                <Typography variant="subtitle1" sx={{ color: colors.text.secondary }}>
                   Référence du Paiement:
                 </Typography>
-                <Typography variant="body1" sx={{ color: 'white', mt: 1 }}>
+                <Typography variant="body1" sx={{ color: colors.text.primary, mt: 1 }}>
                   {paymentInfo.paymentMethodId}
                 </Typography>
               </Grid>
@@ -68,7 +68,7 @@ const PaymentSuccess: React.FC = () => {
           </Box>
         )}
 
-        <Box sx={{ mt: 4, color: colors.grey[300] }}>
+        <Box sx={{ mt: 4, color: colors.text.secondary }}>
           <Typography variant="body1" sx={{ mb: 2 }}>
             Un email de confirmation a été envoyé à votre adresse email.
             Vous recevrez bientôt plus d'informations concernant votre voyage.
@@ -87,10 +87,10 @@ const PaymentSuccess: React.FC = () => {
             variant="contained"
             onClick={handleReturnHome}
             sx={{
-              bgcolor: colors.yellow.light,
-              color: colors.dark[100],
+              bgcolor: colors.primary,
+              color: colors.background.default,
               '&:hover': {
-                bgcolor: colors.yellow[600],
+                bgcolor: colors.primaryDark,
               },
             }}
           >
