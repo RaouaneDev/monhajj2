@@ -1,11 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadStripe } from '@stripe/stripe-js';
-import {
-  CardElement,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Container, Box, Typography, Button } from '@mui/material';
 
 interface Package {
@@ -175,16 +170,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
   const cardStyle = {
     style: {
       base: {
-        fontSize: '16px',
-        color: '#424770',
-        '::placeholder': {
-          color: '#aab7c4',
-        },
+        color: "#32325d",
+        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+        fontSmoothing: "antialiased",
+        fontSize: "16px",
+        "::placeholder": {
+          color: "#aab7c4"
+        }
       },
       invalid: {
-        color: '#9e2146',
-      },
-    },
+        color: "#fa755a",
+        iconColor: "#fa755a"
+      }
+    }
   };
 
   return (
@@ -374,7 +372,7 @@ const Booking: React.FC = () => {
     return (
       <Container maxWidth="sm" sx={{ py: 4, textAlign: 'center' }}>
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ color: 'primary' }}>
+          <Typography variant="h4" gutterBottom color="primary">
             Merci pour votre inscription !
           </Typography>
           <Typography variant="body1" paragraph>
@@ -393,13 +391,14 @@ const Booking: React.FC = () => {
           variant="contained"
           onClick={handleProceedToPayment}
           sx={{
-            backgroundColor: 'primary',
+            mt: 3,
+            backgroundColor: 'primary.main',
             '&:hover': {
-              backgroundColor: 'primaryDark',
+              backgroundColor: 'primary.dark',
             },
           }}
         >
-          Procéder au paiement
+          Procéder au paiement ({deposit}€)
         </Button>
       </Container>
     );
