@@ -177,34 +177,14 @@ const initialFormState: FormData = {
 const Booking: React.FC = () => {
   const navigate = useNavigate();
   const [showScrollTop, setShowScrollTop] = useState(false);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [selectedRoomType, setSelectedRoomType] = useState('');
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPayment, setShowPayment] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
-  const [totalPrice, setTotalPrice] = useState<string>('');
-  const [selectedRoomType, setSelectedRoomType] = useState<string>('');
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -218,10 +198,10 @@ const Booking: React.FC = () => {
       if (selectedPackage && selectedRoom) {
         const basePrice = selectedPackage.price;
         const finalPrice = Math.round(basePrice * selectedRoom.multiplier);
-        setTotalPrice(finalPrice.toString());
+        setTotalPrice(finalPrice);
       }
     } else {
-      setTotalPrice('');
+      setTotalPrice(0);
     }
   }, [formData.package, formData.roomType]);
 
@@ -334,7 +314,7 @@ const Booking: React.FC = () => {
       }
 
       setFormData(initialFormState);
-      setTotalPrice('');
+      setTotalPrice(0);
       setSelectedPackage(foundPackage);
       setShowPayment(true);
 
@@ -352,7 +332,7 @@ const Booking: React.FC = () => {
       dataToSend.append('prix_base', foundPackage.price.toString());
       dataToSend.append('type_chambre', selectedRoomType);
       dataToSend.append('description_chambre', roomTypes.find(room => room.id === formData.roomType)?.description || '');
-      dataToSend.append('prix_total', totalPrice);
+      dataToSend.append('prix_total', totalPrice.toString());
       dataToSend.append('message', formData.message.trim());
 
       // Log pour débogage
@@ -449,7 +429,7 @@ const Booking: React.FC = () => {
       {/* Bouton retour en haut */}
       {showScrollTop && (
         <button
-          onClick={scrollToTop}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="fixed bottom-6 left-6 bg-blue-600 text-white p-2 rounded-full shadow-xl hover:bg-blue-700 transition-all duration-300 z-50 flex items-center justify-center w-8 h-8 border border-white"
           aria-label="Retour en haut"
         >
@@ -747,7 +727,7 @@ const Booking: React.FC = () => {
                 </p>
                 <div className="mt-6 bg-blue-50 p-4 rounded-lg">
                   <p className="text-blue-800 font-medium">
-                    Acompte requis (20%): {Math.ceil(parseInt(totalPrice) * 0.2)}€
+                    Acompte requis (20%): {Math.ceil(totalPrice * 0.2)}€
                   </p>
                   <p className="text-sm text-blue-600 mt-2">
                     Un acompte minimum de 20% est requis pour confirmer votre réservation. 
