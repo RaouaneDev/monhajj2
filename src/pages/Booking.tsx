@@ -289,6 +289,16 @@ const Booking: React.FC = () => {
   const [deposit, setDeposit] = useState<number>(0);
   const [remainingAmount, setRemainingAmount] = useState<number>(0);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [errors, setErrors] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    package: '',
+    roomType: '',
+    numberOfPersons: '',
+    termsAccepted: ''
+  });
 
   const updateTotalPrice = useCallback((packageId: string, roomTypeId: string) => {
     const selectedPkg = packages.find(p => p.id === packageId);
@@ -302,6 +312,23 @@ const Booking: React.FC = () => {
       return { total, deposit, remainingAmount };
     }
   }, [formData.numberOfPersons]);
+
+  const validateField = (name: string, value: string): string => {
+    if (!value.trim()) {
+      return 'Ce champ est requis';
+    }
+    
+    switch (name) {
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value) ? '' : 'Email invalide';
+      case 'phone':
+        const phoneRegex = /^[0-9]{10}$/;
+        return phoneRegex.test(value) ? '' : 'Numéro de téléphone invalide';
+      default:
+        return '';
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -367,11 +394,26 @@ const Booking: React.FC = () => {
     });
   };
 
+  const validateForm = () => {
+    const { firstName, lastName, email, phone, package: pkg, roomType, numberOfPersons, termsAccepted } = formData;
+    const { firstName: firstNameError, lastName: lastNameError, email: emailError, phone: phoneError } = errors;
+
+    if (!firstName || !lastName || !email || !phone || !pkg || !roomType || !numberOfPersons || !termsAccepted) {
+      return false;
+    }
+
+    if (firstNameError || lastNameError || emailError || phoneError) {
+      return false;
+    }
+
+    return true;
+  };
+
   if (showSuccessMessage) {
     return (
       <Container maxWidth="sm" sx={{ py: 4, textAlign: 'center' }}>
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ color: colors.primary }}>
+          <Typography variant="h4" gutterBottom sx={{ color: 'primary' }}>
             Merci pour votre inscription !
           </Typography>
           <Typography variant="body1" paragraph>
@@ -390,9 +432,9 @@ const Booking: React.FC = () => {
           variant="contained"
           onClick={handleProceedToPayment}
           sx={{
-            backgroundColor: colors.primary,
+            backgroundColor: 'primary',
             '&:hover': {
-              backgroundColor: colors.primaryDark,
+              backgroundColor: 'primaryDark',
             },
           }}
         >
@@ -458,6 +500,9 @@ const Booking: React.FC = () => {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
                   required
                 />
+                {errors.firstName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
@@ -472,6 +517,9 @@ const Booking: React.FC = () => {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
                   required
                 />
+                {errors.lastName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -488,6 +536,9 @@ const Booking: React.FC = () => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
                 required
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
             </div>
 
             <div>
@@ -503,6 +554,9 @@ const Booking: React.FC = () => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
                 required
               />
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+              )}
             </div>
 
             <div>
