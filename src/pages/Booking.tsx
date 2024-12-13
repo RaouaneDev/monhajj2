@@ -35,7 +35,12 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYibyVKJiUIL
 
 const stripePromise = loadStripe('votre_cle_publique_stripe');
 
-const PaymentForm = ({ amount, onSuccess }) => {
+interface PaymentFormProps {
+  amount: number;
+  onSuccess: (paymentIntent: any) => void;
+}
+
+const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
