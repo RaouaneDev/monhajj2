@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
-  CardElement,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
@@ -94,234 +96,154 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: ''
+  const [cardErrors, setCardErrors] = useState({
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvc: ''
   });
 
-  useEffect(() => {
-    if (!STRIPE_PUBLIC_KEY) {
-      console.error('Stripe public key is not set');
-      setError('Configuration de paiement incorrecte. Veuillez contacter le support.');
+  const handleCardChange = (event: any, field: string) => {
+    if (event.error) {
+      setCardErrors(prev => ({
+        ...prev,
+        [field]: event.error.message
+      }));
+    } else {
+      setCardErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
     }
-  }, []);
-
-  const cardElementOptions = {
-    style: {
-      base: {
-        color: '#374151',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-        fontSize: '16px',
-        '::placeholder': {
-          color: '#9CA3AF'
-        }
-      },
-      invalid: {
-        color: '#EF4444',
-        iconColor: '#EF4444'
-      }
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
-    if (!stripe || !elements) {
-      console.error('Stripe.js n\'est pas encore chargé');
-      return;
-    }
-
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
-      setError('Impossible de trouver l\'élément de carte. Veuillez réessayer.');
-      return;
-    }
+    if (!stripe || !elements) return;
 
     setProcessing(true);
     setError(null);
 
     try {
-      // Création de l'intention de paiement
-      console.log('Envoi de la requête de paiement...');
-      console.log('URL de l\'API:', API_URL);
-      console.log('Montant:', deposit);
-      
-      const paymentResponse = await fetch(`${API_URL}/create-payment-intent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ 
-          amount: deposit,
-          currency: 'eur',
-          metadata: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email
-          }
-        })
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: elements.getElement(CardNumberElement)!,
       });
 
-      if (!paymentResponse.ok) {
-        const errorText = await paymentResponse.text();
-        console.error('Réponse du serveur:', paymentResponse.status);
-        console.error('Erreur serveur:', errorText);
-        throw new Error(`Erreur lors de la création de l'intention de paiement: ${paymentResponse.status} ${errorText}`);
-      }
-
-      const paymentData = await paymentResponse.json();
-      console.log('Intention de paiement créée avec succès:', paymentData);
-
-      // Confirmation du paiement
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
-        paymentData.clientSecret,
-        {
-          payment_method: {
-            card: cardElement,
-            billing_details: {
-              name: `${formData.firstName} ${formData.lastName}`,
-              email: formData.email
-            }
-          }
-        }
-      );
-
-      if (stripeError) {
-        console.error('Erreur Stripe:', stripeError);
-        setError(stripeError.message || 'Une erreur est survenue lors du paiement.');
+      if (error) {
+        setError(error.message || 'Une erreur est survenue');
         setProcessing(false);
         return;
       }
 
-      console.log('Paiement réussi:', paymentIntent);
+      // Appeler votre API backend avec paymentMethod.id
+      console.log('Payment Method:', paymentMethod);
       onSuccess();
-      
-    } catch (error) {
-      console.error('Erreur:', error);
-      setError(error instanceof Error ? error.message : 'Une erreur est survenue.');
+    } catch (err: any) {
+      setError(err.message || 'Une erreur est survenue');
     } finally {
       setProcessing(false);
     }
   };
 
+  const cardStyle = {
+    style: {
+      base: {
+        fontSize: '16px',
+        color: '#424770',
+        '::placeholder': {
+          color: '#aab7c4',
+        },
+      },
+      invalid: {
+        color: '#9e2146',
+      },
+    },
+  };
+
   return (
-    <div className="mt-8 space-y-6">
-      <div className="bg-dark-100 p-6 rounded-lg">
-        <h3 className="text-xl font-semibold mb-4 text-yellow-light">Paiement sécurisé</h3>
-        
-        {amount > 0 ? (
-          <div className="mb-6 bg-blue-50 p-4 rounded-lg">
-            <p className="text-blue-800 font-medium">
-              Montant total du voyage : {amount.toLocaleString()}€
-            </p>
-            <p className="text-blue-800 font-medium mt-2">
-              Acompte à payer maintenant : {deposit.toLocaleString()}€
-            </p>
-            <p className="text-sm text-blue-600 mt-2">
-              Solde restant de {remainingAmount.toLocaleString()}€ à régler avant le départ
-            </p>
-          </div>
-        ) : (
-          <div className="mb-6 bg-red-50 p-4 rounded-lg">
-            <p className="text-red-800">
-              Veuillez d'abord sélectionner un forfait et le nombre de personnes pour voir le montant.
-            </p>
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="block text-lg font-medium text-gray-700">
-              Informations de facturation
+    <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Numéro de carte
             </label>
-            <div className="mb-4">
-              <input
-                type="text"
-                name="firstName"
-                placeholder="Prénom"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-                required
+            <div className="p-3 border rounded-md bg-white">
+              <CardNumberElement 
+                options={cardStyle}
+                onChange={(e) => handleCardChange(e, 'cardNumber')}
               />
             </div>
-            <div className="mb-4">
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Nom"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Téléphone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <label className="block text-lg font-medium text-gray-700">
-              Informations de carte
-            </label>
-            <div className="mt-1 block w-full p-4 border border-gray-300 bg-white rounded-md shadow-sm focus-within:ring-1 focus-within:ring-yellow-500 focus-within:border-yellow-500">
-              <CardElement options={cardElementOptions} />
-            </div>
-            {error && (
-              <p className="text-red-500 text-sm mt-1">
-                {error}
-              </p>
+            {cardErrors.cardNumber && (
+              <p className="mt-1 text-sm text-red-600">{cardErrors.cardNumber}</p>
             )}
           </div>
 
-          <button
-            type="submit"
-            disabled={!stripe || processing}
-            className={`w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 ${
-              processing ? 'opacity-75 cursor-not-allowed' : ''
-            }`}
-          >
-            {processing ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Traitement en cours...
-              </span>
-            ) : (
-              'Payer maintenant'
-            )}
-          </button>
-        </form>
-      </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date d'expiration
+              </label>
+              <div className="p-3 border rounded-md bg-white">
+                <CardExpiryElement 
+                  options={cardStyle}
+                  onChange={(e) => handleCardChange(e, 'cardExpiry')}
+                />
+              </div>
+              {cardErrors.cardExpiry && (
+                <p className="mt-1 text-sm text-red-600">{cardErrors.cardExpiry}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                CVC
+              </label>
+              <div className="p-3 border rounded-md bg-white">
+                <CardCvcElement 
+                  options={cardStyle}
+                  onChange={(e) => handleCardChange(e, 'cardCvc')}
+                />
+              </div>
+              {cardErrors.cardCvc && (
+                <p className="mt-1 text-sm text-red-600">{cardErrors.cardCvc}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 space-y-2">
+          <p className="text-sm text-gray-600">Montant total : {amount}€</p>
+          <p className="text-sm text-gray-600">Acompte à payer : {deposit}€</p>
+          <p className="text-sm text-gray-600">Reste à payer : {remainingAmount}€</p>
+        </div>
+
+        {error && (
+          <div className="text-red-500 text-sm mt-2">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={!stripe || processing}
+          className={`w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 ${
+            processing ? 'opacity-75 cursor-not-allowed' : ''
+          }`}
+        >
+          {processing ? (
+            <span className="flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Traitement en cours...
+            </span>
+          ) : (
+            'Payer maintenant'
+          )}
+        </button>
+      </form>
     </div>
   );
 };
