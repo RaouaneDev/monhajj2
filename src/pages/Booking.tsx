@@ -102,6 +102,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
     cardExpiry: '',
     cardCvc: ''
   });
+  const [isFormComplete, setIsFormComplete] = useState({
+    cardNumber: false,
+    cardExpiry: false,
+    cardCvc: false
+  });
 
   const handleCardChange = (event: any, field: string) => {
     if (event.error) {
@@ -109,25 +114,52 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
         ...prev,
         [field]: event.error.message
       }));
+      setIsFormComplete(prev => ({
+        ...prev,
+        [field]: false
+      }));
     } else {
       setCardErrors(prev => ({
         ...prev,
         [field]: ''
       }));
+      setIsFormComplete(prev => ({
+        ...prev,
+        [field]: event.complete
+      }));
     }
+  };
+
+  const validateForm = () => {
+    const { cardNumber, cardExpiry, cardCvc } = isFormComplete;
+    if (!cardNumber || !cardExpiry || !cardCvc) {
+      setError('Veuillez remplir tous les champs de la carte bancaire correctement.');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!stripe || !elements) return;
 
+    if (!validateForm()) {
+      return;
+    }
+
     setProcessing(true);
     setError(null);
 
     try {
+      const cardElement = elements.getElement(CardNumberElement);
+      if (!cardElement) {
+        setError('Erreur: Impossible de traiter le paiement');
+        return;
+      }
+
       const { error, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
-        card: elements.getElement(CardNumberElement)!,
+        card: cardElement,
       });
 
       if (error) {
