@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Container, Box, Typography, Button } from '@mui/material';
 
 interface Package {
@@ -60,8 +59,6 @@ const roomTypes: RoomType[] = [
   { id: 'double', name: 'Chambre Double', multiplier: 1.5, description: 'Chambre pour 2 personnes' },
 ];
 
-const STRIPE_PUBLIC_KEY = process.env.REACT_APP_STRIPE_PUBLIC_KEY;
-
 const initialFormState: FormData = {
   firstName: '',
   lastName: '',
@@ -76,169 +73,6 @@ const initialFormState: FormData = {
   message: '',
   numberOfPersons: '1',
   termsAccepted: false
-};
-
-interface PaymentFormProps {
-  amount: number;
-  deposit: number;
-  remainingAmount: number;
-  onSuccess: () => void;
-}
-
-const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmount, onSuccess }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [error, setError] = useState<string | null>(null);
-  const [processing, setProcessing] = useState(false);
-  const [cardErrors, setCardErrors] = useState({
-    card: ''
-  });
-  const [isFormComplete, setIsFormComplete] = useState({
-    card: false
-  });
-
-  const handleCardChange = (event: any) => {
-    if (event.error) {
-      setCardErrors(prev => ({
-        ...prev,
-        card: event.error.message
-      }));
-      setIsFormComplete(prev => ({
-        ...prev,
-        card: false
-      }));
-    } else {
-      setCardErrors(prev => ({
-        ...prev,
-        card: ''
-      }));
-      setIsFormComplete(prev => ({
-        ...prev,
-        card: event.complete
-      }));
-    }
-  };
-
-  const validateForm = () => {
-    const { card } = isFormComplete;
-    if (!card) {
-      setError('Veuillez remplir tous les champs de la carte bancaire correctement.');
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!stripe || !elements) return;
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setProcessing(true);
-    setError(null);
-
-    try {
-      const cardElement = elements.getElement(CardElement);
-      if (!cardElement) {
-        setError('Erreur: Impossible de traiter le paiement');
-        return;
-      }
-
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-      });
-
-      if (error) {
-        setError(error.message || 'Une erreur est survenue');
-        setProcessing(false);
-        return;
-      }
-
-      // Appeler votre API backend avec paymentMethod.id
-      console.log('Payment Method:', paymentMethod);
-      onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue');
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const cardStyle = {
-    style: {
-      base: {
-        color: "#32325d",
-        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-        fontSmoothing: "antialiased",
-        fontSize: "16px",
-        "::placeholder": {
-          color: "#aab7c4"
-        }
-      },
-      invalid: {
-        color: "#fa755a",
-        iconColor: "#fa755a"
-      }
-    }
-  };
-
-  return (
-    <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Numéro de carte
-            </label>
-            <div className="p-3 border rounded-md bg-white">
-              <CardElement 
-                options={cardStyle}
-                onChange={handleCardChange}
-              />
-            </div>
-            {cardErrors.card && (
-              <p className="mt-1 text-sm text-red-600">{cardErrors.card}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-6 space-y-2">
-          <p className="text-sm text-gray-600">Montant total : {amount}€</p>
-          <p className="text-sm text-gray-600">Acompte à payer : {deposit}€</p>
-          <p className="text-sm text-gray-600">Reste à payer : {remainingAmount}€</p>
-        </div>
-
-        {error && (
-          <div className="text-red-500 text-sm mt-2">
-            {error}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={!stripe || processing}
-          className={`w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 ${
-            processing ? 'opacity-75 cursor-not-allowed' : ''
-          }`}
-        >
-          {processing ? (
-            <span className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Traitement en cours...
-            </span>
-          ) : (
-            'Payer maintenant'
-          )}
-        </button>
-      </form>
-    </div>
-  );
 };
 
 const Booking: React.FC = () => {
