@@ -426,10 +426,9 @@ const Booking: React.FC = () => {
   };
 
   const handleBookingTypeChange = (type: 'registration' | 'payment') => {
-    setBookingType(type);
     if (type === 'registration') {
-      setShowPayment(false);
       setCurrentStep('form');
+      setShowPayment(false);
     } else {
       setCurrentStep('payment');
     }
@@ -526,7 +525,7 @@ const Booking: React.FC = () => {
         paymentCompleted: true
       }
     });
-  }, [formData, selectedPackage, roomTypes, totalPrice, navigate]);
+  }, [formData, selectedPackage, totalPrice, navigate]);
 
   return (
     <div className="relative min-h-screen bg-gray-50">
@@ -1023,6 +1022,70 @@ const Booking: React.FC = () => {
       </div>
     </div>
   );
+};
+
+const handlePaymentSuccess = useCallback(() => {
+  setSubmitStatus('success');
+  const registrationData = {
+    ...formData,
+    bookingType: 'payment',
+    packageDetails: selectedPackage,
+    roomDetails: roomTypes.find(r => r.id === formData.roomType),
+    totalPrice,
+    registrationDate: new Date().toISOString(),
+    numberOfPersons: parseInt(formData.numberOfPersons)
+  };
+  
+  navigate('/registration-success', {
+    state: {
+      formData,
+      packageDetails: selectedPackage,
+      roomDetails: roomTypes.find(r => r.id === formData.roomType),
+      totalPrice,
+      numberOfPersons: parseInt(formData.numberOfPersons),
+      paymentCompleted: true
+    }
+  });
+}, [formData, selectedPackage, totalPrice, navigate]);
+
+const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  
+  if (!validateForm()) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  setIsSubmitting(true);
+  setSubmitStatus('idle');
+  
+  try {
+    const selectedRoom = roomTypes.find(r => r.id === formData.roomType);
+    if (currentStep === 'form') {
+      setCurrentStep('payment');
+    } else {
+      const registrationData = {
+        ...formData,
+        bookingType: 'payment',
+        packageDetails: selectedPackage,
+        roomDetails: selectedRoom,
+        totalPrice,
+        registrationDate: new Date().toISOString(),
+        numberOfPersons: parseInt(formData.numberOfPersons)
+      };
+      
+      // Utilisation des données d'inscription
+      console.log('Registration data:', registrationData);
+      
+      // Continuer avec le processus de paiement
+      setShowPayment(true);
+    }
+  } catch (error) {
+    console.error('Error during form submission:', error);
+    setSubmitStatus('error');
+  } finally {
+    setIsSubmitting(false);
+  }
 };
 
 export default Booking;
