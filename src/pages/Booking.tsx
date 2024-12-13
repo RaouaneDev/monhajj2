@@ -355,6 +355,7 @@ const Booking: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [bookingType, setBookingType] = useState<'registration' | 'payment'>('registration');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -451,6 +452,13 @@ const Booking: React.FC = () => {
     return isValid;
   };
 
+  const handleBookingTypeChange = (type: 'registration' | 'payment') => {
+    setBookingType(type);
+    if (type === 'registration') {
+      setShowPayment(false);
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
@@ -463,25 +471,34 @@ const Booking: React.FC = () => {
     setSubmitStatus('idle');
     
     try {
-      const foundPackage = packages.find(p => p.id === formData.package);
-      if (!foundPackage) {
-        throw new Error('Package not found');
+      if (bookingType === 'registration') {
+        const registrationData = {
+          ...formData,
+          bookingType: 'registration',
+          packageDetails: selectedPackage,
+          roomDetails: selectedRoomType,
+          totalPrice,
+          registrationDate: new Date().toISOString()
+        };
+        
+        // TODO: Send to backend/database
+        console.log('Registration data:', registrationData);
+        setSubmitStatus('success');
+        setShowSuccess(true);
+        navigate('/registration-success', { 
+          state: { 
+            formData,
+            packageDetails: selectedPackage,
+            roomDetails: selectedRoomType,
+            totalPrice 
+          }
+        });
+      } else {
+        // Proceed with payment flow
+        setShowPayment(true);
       }
-
-      console.log('Données envoyées:', formData);
-
-      // Passer directement au paiement sans Google Script
-      setFormData(initialFormState);
-      setSelectedPackage(foundPackage);
-      setShowPayment(true);
-      setSubmitStatus('success');
-      
     } catch (error) {
       console.error('Error during form submission:', error);
-      setErrors(prev => ({
-        ...prev,
-        submit: error instanceof Error ? error.message : 'An error occurred'
-      }));
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -845,6 +862,39 @@ const Booking: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold mb-4">Type de réservation</h3>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => handleBookingTypeChange('registration')}
+                className={`flex-1 py-3 px-6 rounded-lg text-center ${
+                  bookingType === 'registration'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Inscription uniquement
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBookingTypeChange('payment')}
+                className={`flex-1 py-3 px-6 rounded-lg text-center ${
+                  bookingType === 'payment'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Réservation avec paiement
+              </button>
+            </div>
+            <p className="mt-2 text-sm text-gray-600">
+              {bookingType === 'registration' 
+                ? "L'inscription vous permet de réserver votre place sans paiement immédiat."
+                : "La réservation avec paiement confirme immédiatement votre place."}
+            </p>
           </div>
 
           <div className="mt-12 mb-8">

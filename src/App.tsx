@@ -9,19 +9,21 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Booking from './pages/Booking';
 import PaymentSuccess from './pages/PaymentSuccess';
+import RegistrationSuccess from './pages/RegistrationSuccess';
 
 function App() {
   return (
     <MainLayout>
       <Routes>
-        <Route index element={<Home />} />
-        <Route path="packages" element={<Packages />} />
-        <Route path="guide-hajj" element={<GuideHajj />} />
-        <Route path="guide-omra" element={<GuideOmra />} />
-        <Route path="about" element={<About />} />
-        <Route path="contact" element={<Contact />} />
-        <Route path="booking" element={<Booking />} />
-        <Route path="payment-success" element={<PaymentSuccess />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/packages" element={<Packages />} />
+        <Route path="/guide-hajj" element={<GuideHajj />} />
+        <Route path="/guide-omra" element={<GuideOmra />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/booking" element={<Booking />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/registration-success" element={<RegistrationSuccess />} />
       </Routes>
     </MainLayout>
   );
