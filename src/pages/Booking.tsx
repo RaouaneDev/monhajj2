@@ -42,10 +42,12 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || '');
 
 interface PaymentFormProps {
   amount: number;
+  deposit: number;
+  remainingAmount: number;
   onSuccess: () => void;
 }
 
-const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
+const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmount, onSuccess }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
@@ -133,18 +135,25 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
       <div className="bg-dark-100 p-6 rounded-lg">
         <h3 className="text-xl font-semibold mb-4 text-yellow-light">Paiement sécurisé</h3>
         
-        <div className="mb-6 bg-blue-50 p-4 rounded-lg">
-          <p className="text-blue-800 font-medium">
-            Montant total : {amount}€
-          </p>
-          <p className="text-blue-800 font-medium mt-2">
-            Acompte à payer (20%) : {Math.ceil(amount * 0.2)}€
-          </p>
-          <p className="text-sm text-blue-600 mt-2">
-            Le reste du montant ({Math.floor(amount * 0.8)}€) sera à régler avant le départ.
-          </p>
-        </div>
-
+        {amount > 0 ? (
+          <div className="mb-6 bg-blue-50 p-4 rounded-lg">
+            <p className="text-blue-800 font-medium">
+              Montant total du voyage : {amount.toLocaleString()}€
+            </p>
+            <p className="text-blue-800 font-medium mt-2">
+              Acompte à payer maintenant : {deposit.toLocaleString()}€
+            </p>
+            <p className="text-sm text-blue-600 mt-2">
+              Solde restant de {remainingAmount.toLocaleString()}€ à régler avant le départ
+            </p>
+          </div>
+        ) : (
+          <div className="mb-6 bg-red-50 p-4 rounded-lg">
+            <p className="text-red-800">
+              Veuillez d'abord sélectionner un forfait et le nombre de personnes pour voir le montant.
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="block text-lg font-medium text-gray-700">
@@ -225,7 +234,10 @@ const Booking: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [selectedRoomType, setSelectedRoomType] = useState('');
+  const [numberOfPersons, setNumberOfPersons] = useState(1);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [deposit, setDeposit] = useState(0);
+  const [remainingAmount, setRemainingAmount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -253,20 +265,21 @@ const Booking: React.FC = () => {
     }));
   };
 
+  const calculateTotal = () => {
+    if (!selectedPackage || !selectedRoomType || !numberOfPersons) return 0;
+    const basePrice = selectedPackage.price;
+    const roomPrice = selectedRoomType === 'double' ? 0 : 500; // Supplément chambre single
+    return (basePrice + roomPrice) * numberOfPersons;
+  };
+
   useEffect(() => {
-    if (formData.package && formData.roomType) {
-      const selectedPackage = packages.find(pkg => pkg.id === formData.package);
-      const selectedRoom = roomTypes.find(room => room.id === formData.roomType);
-      
-      if (selectedPackage && selectedRoom) {
-        const basePrice = selectedPackage.price;
-        const finalPrice = Math.round(basePrice * selectedRoom.multiplier);
-        setTotalPrice(finalPrice);
-      }
-    } else {
-      setTotalPrice(0);
-    }
-  }, [formData.package, formData.roomType]);
+    const total = calculateTotal();
+    const deposit = Math.ceil(total * 0.2);
+    const remainingAmount = total - deposit;
+    setTotalPrice(total);
+    setDeposit(deposit);
+    setRemainingAmount(remainingAmount);
+  }, [selectedPackage, selectedRoomType, numberOfPersons]);
 
   const validateField = (name: string, value: string): string => {
     switch (name) {
@@ -370,7 +383,6 @@ const Booking: React.FC = () => {
       }
 
       setFormData(initialFormState);
-      setTotalPrice(0);
       setSelectedPackage(foundPackage);
       setShowPayment(true);
 
@@ -768,14 +780,31 @@ const Booking: React.FC = () => {
               )}
             </div>
 
+            <div>
+              <label htmlFor="numberOfPersons" className="block text-sm font-medium text-gray-300">
+                Nombre de personnes
+              </label>
+              <input
+                type="number"
+                id="numberOfPersons"
+                name="numberOfPersons"
+                required
+                min="1"
+                value={numberOfPersons}
+                onChange={(e) => setNumberOfPersons(parseInt(e.target.value))}
+                className={`mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
+                placeholder="Nombre de personnes"
+              />
+            </div>
+
             {totalPrice && (
               <div className="mt-4 p-4 bg-dark-300 rounded-md">
                 <p className="text-lg font-semibold text-yellow-light">
-                  Prix total: {totalPrice}€
+                  Prix total: {totalPrice.toLocaleString()}€
                 </p>
                 <div className="mt-6 bg-blue-50 p-4 rounded-lg">
                   <p className="text-blue-800 font-medium">
-                    Acompte requis (20%): {Math.ceil(totalPrice * 0.2)}€
+                    Acompte requis (20%): {deposit.toLocaleString()}€
                   </p>
                   <p className="text-sm text-blue-600 mt-2">
                     Un acompte minimum de 20% est requis pour confirmer votre réservation. 
@@ -882,6 +911,8 @@ const Booking: React.FC = () => {
               <Elements stripe={stripePromise}>
                 <PaymentForm 
                   amount={totalPrice} 
+                  deposit={deposit}
+                  remainingAmount={remainingAmount}
                   onSuccess={handlePaymentSuccess}
                 />
               </Elements>
