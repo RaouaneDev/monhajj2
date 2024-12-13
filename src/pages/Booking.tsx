@@ -342,10 +342,9 @@ const initialFormState: FormData = {
 
 const Booking: React.FC = () => {
   const navigate = useNavigate();
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
-  const [selectedRoomType, setSelectedRoomType] = useState('');
-  const [numberOfPersons, setNumberOfPersons] = useState(1);
+  const [selectedRoomType, setSelectedRoomType] = useState<string>('');
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const [deposit, setDeposit] = useState(0);
   const [remainingAmount, setRemainingAmount] = useState(0);
@@ -365,6 +364,14 @@ const Booking: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handlePackageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const packageId = event.target.value;
+    const selectedPkg = packages.find(p => p.id === packageId);
+    setSelectedPackage(selectedPkg || null);
+    setFormData(prev => ({ ...prev, package: packageId }));
+    updateTotalPrice(packageId, formData.roomType);
+  };
 
   const handleRoomTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const roomType = event.target.value;
@@ -786,7 +793,7 @@ const Booking: React.FC = () => {
                 name="package"
                 required
                 value={formData.package}
-                onChange={handleInputChange}
+                onChange={handlePackageChange}
                 className={`mt-1 block w-full py-3 px-4 border ${
                   errors.package ? 'border-red-500' : 'border-gray-300'
                 } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
