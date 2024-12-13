@@ -93,13 +93,6 @@ const Booking: React.FC = () => {
     termsAccepted: ''
   });
 
-  // Effect to update price when package or roomType changes
-  useEffect(() => {
-    if (formData.package && formData.roomType) {
-      updateTotalPrice(formData.package, formData.roomType);
-    }
-  }, [formData.package, formData.roomType, updateTotalPrice]);
-
   const updateTotalPrice = useCallback((packageId: string, roomTypeId: string) => {
     const selectedPkg = packages.find(p => p.id === packageId);
     const selectedRoom = roomTypes.find(r => r.id === roomTypeId);
@@ -118,6 +111,13 @@ const Booking: React.FC = () => {
       setRemainingAmount(Math.round(remainingAmount));
     }
   }, [formData.numberOfPersons]);
+
+  // Effect to update price when package or roomType changes
+  useEffect(() => {
+    if (formData.package && formData.roomType) {
+      updateTotalPrice(formData.package, formData.roomType);
+    }
+  }, [formData.package, formData.roomType, updateTotalPrice]);
 
   const validateField = (name: string, value: string): string => {
     if (!value.trim()) {
