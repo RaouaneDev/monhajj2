@@ -96,13 +96,19 @@ const Booking: React.FC = () => {
   const updateTotalPrice = useCallback((packageId: string, roomTypeId: string) => {
     const selectedPkg = packages.find(p => p.id === packageId);
     const selectedRoom = roomTypes.find(r => r.id === roomTypeId);
-    const numberOfPersons = parseInt(formData.numberOfPersons) || 1;
     
     if (selectedPkg && selectedRoom) {
-      const total = selectedPkg.price * selectedRoom.multiplier * numberOfPersons;
-      const deposit = total * 0.3;
-      const remainingAmount = total * 0.7;
-      return { total, deposit, remainingAmount };
+      const basePrice = selectedPkg.price;
+      const numberOfPersons = parseInt(formData.numberOfPersons) || 1;
+      const roomMultiplier = selectedRoom.multiplier;
+      
+      const totalPrice = basePrice * numberOfPersons * roomMultiplier;
+      const depositAmount = totalPrice * 0.3; // 30% d'acompte
+      const remainingAmount = totalPrice - depositAmount;
+      
+      setTotalPrice(totalPrice);
+      setDeposit(Math.round(depositAmount));
+      setRemainingAmount(Math.round(remainingAmount));
     }
   }, [formData.numberOfPersons]);
 
@@ -204,36 +210,71 @@ const Booking: React.FC = () => {
 
   if (showSuccessMessage) {
     return (
-      <Container maxWidth="sm" sx={{ py: 4, textAlign: 'center' }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom color="primary">
-            Merci pour votre inscription !
+      <Container maxWidth="sm" sx={{ py: 4 }}>
+        <Box sx={{ 
+          backgroundColor: 'white', 
+          borderRadius: 2, 
+          p: 4, 
+          boxShadow: 3,
+          textAlign: 'center'
+        }}>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h4" gutterBottom color="primary" sx={{ fontWeight: 'bold' }}>
+              Réservation Confirmée !
+            </Typography>
+            <Typography variant="h6" gutterBottom color="text.secondary">
+              Merci {formData.firstName} {formData.lastName} pour votre confiance
+            </Typography>
+          </Box>
+
+          <Box sx={{ my: 4, p: 3, backgroundColor: 'grey.50', borderRadius: 1 }}>
+            <Typography variant="h6" gutterBottom color="primary">
+              Détails de votre réservation
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Package : {packages.find(p => p.id === formData.package)?.name}
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Type de chambre : {roomTypes.find(r => r.id === formData.roomType)?.name}
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Nombre de personnes : {formData.numberOfPersons}
+            </Typography>
+          </Box>
+
+          <Box sx={{ my: 4, p: 3, backgroundColor: 'primary.light', borderRadius: 1, color: 'white' }}>
+            <Typography variant="h6" gutterBottom>
+              Détails du paiement
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Montant total : {totalPrice}€
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Acompte à payer : {deposit}€
+            </Typography>
+            <Typography variant="body1" paragraph>
+              Reste à payer : {remainingAmount}€
+            </Typography>
+          </Box>
+
+          <Typography variant="body1" paragraph color="text.secondary">
+            Un email de confirmation a été envoyé à {formData.email}
           </Typography>
-          <Typography variant="body1" paragraph>
-            Votre demande de réservation a été enregistrée avec succès.
-          </Typography>
-          <Typography variant="body1" paragraph>
-            Montant total : {totalPrice}€
-            <br />
-            Acompte à payer : {deposit}€
-            <br />
-            Reste à payer : {remainingAmount}€
-          </Typography>
+
+          <Button
+            variant="contained"
+            onClick={handleProceedToPayment}
+            sx={{
+              mt: 3,
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.dark',
+              },
+            }}
+          >
+            Procéder au paiement ({deposit}€)
+          </Button>
         </Box>
-        
-        <Button
-          variant="contained"
-          onClick={handleProceedToPayment}
-          sx={{
-            mt: 3,
-            backgroundColor: 'primary.main',
-            '&:hover': {
-              backgroundColor: 'primary.dark',
-            },
-          }}
-        >
-          Procéder au paiement ({deposit}€)
-        </Button>
       </Container>
     );
   }
