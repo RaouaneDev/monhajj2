@@ -146,6 +146,34 @@ interface Package {
   description: string;
 }
 
+interface FormData {
+  firstName: string;
+  lastName: string;
+  address: string;
+  gender: string;
+  age: string;
+  nationality: string;
+  phone: string;
+  email: string;
+  package: string;
+  roomType: string;
+  message: string;
+}
+
+const initialFormState: FormData = {
+  firstName: '',
+  lastName: '',
+  address: '',
+  gender: '',
+  age: '',
+  nationality: '',
+  phone: '',
+  email: '',
+  package: '',
+  roomType: '',
+  message: '',
+};
+
 const Booking: React.FC = () => {
   const navigate = useNavigate();
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -168,21 +196,6 @@ const Booking: React.FC = () => {
       top: 0,
       behavior: 'smooth'
     });
-  };
-
-  // État initial du formulaire
-  const initialFormState = {
-    firstName: '',
-    lastName: '',
-    address: '',
-    gender: '',
-    age: '',
-    nationality: '',
-    phone: '',
-    email: '',
-    package: '',
-    roomType: '',
-    message: ''
   };
 
   const [formData, setFormData] = useState(initialFormState);
