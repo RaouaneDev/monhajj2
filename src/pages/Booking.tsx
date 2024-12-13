@@ -77,7 +77,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
     if (!stripe || !elements) {
@@ -86,11 +86,16 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
       return;
     }
 
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) {
+      setError('Impossible de trouver l\'élément de carte. Veuillez réessayer.');
+      return;
+    }
+
     setProcessing(true);
     setError(null);
 
     try {
-      // Créer l'intention de paiement
       const response = await fetch('https://monhajj2backend.onrender.com/create-payment-intent', {
         method: 'POST',
         headers: {
@@ -108,31 +113,31 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
 
       const data = await response.json();
 
-      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
         data.clientSecret,
         {
           payment_method: {
-            card: elements.getElement(CardElement),
+            card: cardElement,
+            billing_details: {
+              name: formData.firstName + ' ' + formData.lastName,
+              email: formData.email,
+              phone: formData.phone
+            }
           },
         }
       );
 
-      if (confirmError) {
-        setError(confirmError.message || 'An error occurred during payment');
-        setProcessing(false);
-        return;
-      }
-
-      if (paymentIntent.status === 'succeeded') {
-        setError(null);
+      if (stripeError) {
+        setError(stripeError.message || 'Une erreur est survenue lors du paiement.');
+      } else if (paymentIntent.status === 'succeeded') {
         onSuccess();
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (error) {
+      console.error('Payment error:', error);
+      setError('Une erreur est survenue lors du traitement du paiement. Veuillez réessayer.');
+    } finally {
       setProcessing(false);
     }
-
-    setProcessing(false);
   };
 
   return (
