@@ -499,16 +499,15 @@ const Booking: React.FC = () => {
           registrationDate: new Date().toISOString()
         };
         
-        // TODO: Send to backend/database
+        // Log the registration data
         console.log('Registration data:', registrationData);
         setSubmitStatus('success');
-        setShowSuccess(true);
-        navigate('/registration-success', { 
-          state: { 
+        navigate('/registration-success', {
+          state: {
             formData,
             packageDetails: selectedPackage,
             roomDetails: roomTypes.find(r => r.id === formData.roomType),
-            totalPrice 
+            totalPrice
           }
         });
       } else {
@@ -959,30 +958,6 @@ const Booking: React.FC = () => {
             </button>
           </div>
         </form>
-
-        {showSuccess && submitStatus === 'success' && (
-          <div className="fixed top-4 right-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded shadow-lg animate-fade-in">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <svg className="h-5 w-5 text-green-500 mr-2" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M5 13l4 4L19 7"></path>
-                </svg>
-                <div>
-                  <p className="font-bold">Réservation envoyée avec succès !</p>
-                  <p className="text-sm">Nous vous contacterons bientôt.</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowSuccess(false)}
-                className="ml-4 text-green-700 hover:text-green-900"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
 
         {submitStatus === 'success' && (
           <div className="mt-6 flex flex-col items-center space-y-4">
