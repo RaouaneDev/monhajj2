@@ -8,8 +8,36 @@ import {
   useElements,
 } from '@stripe/react-stripe-js';
 
+interface Package {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+}
+
+interface RoomType {
+  id: string;
+  name: string;
+  multiplier: number;
+  description: string;
+}
+
+interface FormData {
+  firstName: string;
+  lastName: string;
+  address: string;
+  gender: string;
+  age: string;
+  nationality: string;
+  phone: string;
+  email: string;
+  package: string;
+  roomType: string;
+  message: string;
+}
+
 // Configuration des forfaits
-const packages = [
+const packages: Package[] = [
   { 
     id: 'janvier2025',
     name: 'Omra Janvier 2025',
@@ -30,7 +58,7 @@ const packages = [
   },
 ];
 
-const roomTypes = [
+const roomTypes: RoomType[] = [
   { id: 'quadruple', name: 'Chambre Quadruple', multiplier: 1.0, description: 'Chambre pour 4 personnes' },
   { id: 'triple', name: 'Chambre Triple', multiplier: 1.33, description: 'Chambre pour 3 personnes' },
   { id: 'double', name: 'Chambre Double', multiplier: 1.5, description: 'Chambre pour 2 personnes' },
@@ -300,27 +328,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
   );
 };
 
-interface Package {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-}
-
-interface FormData {
-  firstName: string;
-  lastName: string;
-  address: string;
-  gender: string;
-  age: string;
-  nationality: string;
-  phone: string;
-  email: string;
-  package: string;
-  roomType: string;
-  message: string;
-}
-
 const initialFormState: FormData = {
   firstName: '',
   lastName: '',
@@ -505,14 +512,17 @@ const Booking: React.FC = () => {
   };
 
   const handlePaymentSuccess = () => {
+    const selectedRoom = roomTypes.find(room => room.id === formData.roomType) || roomTypes[0];
+    const selectedPkg = packages.find(pkg => pkg.id === formData.package);
+
     navigate('/payment-success', {
       state: {
         bookingDetails: {
           ...formData,
           amount: deposit,
           remainingAmount: remainingAmount,
-          package: selectedPackage?.name || '',
-          roomType: selectedRoomType?.name || ''
+          package: selectedPkg?.name || '',
+          roomType: selectedRoom.name
         }
       }
     });
