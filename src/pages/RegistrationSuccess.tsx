@@ -4,89 +4,78 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const RegistrationSuccess: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { formData, packageDetails, roomDetails, totalPrice } = location.state || {};
+  const { formData, packageDetails, roomDetails, totalPrice, numberOfPersons } = location.state || {};
 
-  if (!formData) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold text-red-600 mb-4">Erreur</h2>
-          <p className="text-gray-600">Aucune donnée d'inscription trouvée.</p>
-          <button
-            onClick={() => navigate('/')}
-            className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Retour à l'accueil
-          </button>
-        </div>
-      </div>
-    );
+  if (!formData || !packageDetails || !roomDetails) {
+    return <Navigate to="/booking" replace />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12">
-      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-green-600 mb-4">
-            Inscription Confirmée !
-          </h2>
-          <p className="text-gray-600">
-            Merci pour votre inscription. Nous avons bien reçu vos informations.
-          </p>
-        </div>
-
-        <div className="space-y-6">
-          <div className="border-b pb-4">
-            <h3 className="text-xl font-semibold mb-4">Informations personnelles</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-gray-600">Nom</p>
-                <p className="font-medium">{formData.lastName}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Prénom</p>
-                <p className="font-medium">{formData.firstName}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Email</p>
-                <p className="font-medium">{formData.email}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Téléphone</p>
-                <p className="font-medium">{formData.phone}</p>
-              </div>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white shadow-xl rounded-lg p-6">
+          <div className="text-center mb-8">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+              <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
             </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Réservation enregistrée avec succès !</h2>
+            <p className="text-lg text-gray-600 mb-2">Nous vous contacterons bientôt au {formData.phone} pour finaliser votre réservation.</p>
+            <p className="text-sm text-gray-500">Veuillez garder votre téléphone à proximité.</p>
           </div>
 
-          <div className="border-b pb-4">
-            <h3 className="text-xl font-semibold mb-4">Détails du voyage</h3>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="border-t border-b border-gray-200 py-6 my-6">
+            <h3 className="text-xl font-semibold mb-4">Détails de la réservation</h3>
+            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-gray-600">Forfait</p>
-                <p className="font-medium">{packageDetails?.name}</p>
+                <dt className="text-sm font-medium text-gray-500">Forfait</dt>
+                <dd className="mt-1 text-lg text-gray-900">{packageDetails.name}</dd>
               </div>
               <div>
-                <p className="text-gray-600">Type de chambre</p>
-                <p className="font-medium">{roomDetails?.name}</p>
+                <dt className="text-sm font-medium text-gray-500">Type de chambre</dt>
+                <dd className="mt-1 text-lg text-gray-900">{roomDetails.name}</dd>
               </div>
               <div>
-                <p className="text-gray-600">Prix total estimé</p>
-                <p className="font-medium">{totalPrice} €</p>
+                <dt className="text-sm font-medium text-gray-500">Nombre de personnes</dt>
+                <dd className="mt-1 text-lg text-gray-900">{numberOfPersons} {numberOfPersons === 1 ? 'personne' : 'personnes'}</dd>
               </div>
-            </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Prix total</dt>
+                <dd className="mt-1 text-lg text-gray-900">{totalPrice.toLocaleString()}€</dd>
+              </div>
+            </dl>
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-blue-800">
-              Notre équipe vous contactera prochainement pour finaliser votre réservation
-              et organiser le paiement.
-            </p>
+          <div className="border-b border-gray-200 py-6 mb-6">
+            <h3 className="text-xl font-semibold mb-4">Vos informations</h3>
+            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Nom complet</dt>
+                <dd className="mt-1 text-lg text-gray-900">{formData.firstName} {formData.lastName}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Email</dt>
+                <dd className="mt-1 text-lg text-gray-900">{formData.email}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Téléphone</dt>
+                <dd className="mt-1 text-lg text-gray-900">{formData.phone}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Nationalité</dt>
+                <dd className="mt-1 text-lg text-gray-900">{formData.nationality}</dd>
+              </div>
+            </dl>
           </div>
 
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-center space-x-4">
             <button
-              onClick={() => navigate('/')}
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700"
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setTimeout(() => navigate('/'), 500);
+              }}
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
             >
               Retour à l'accueil
             </button>
