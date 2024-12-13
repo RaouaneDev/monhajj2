@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
   CardElement,
@@ -198,7 +198,15 @@ const Booking: React.FC = () => {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Calcul du prix total quand le forfait ou le type de chambre change
+  const handleRoomTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const roomType = event.target.value;
+    setSelectedRoomType(roomType);
+    setFormData(prev => ({
+      ...prev,
+      roomType
+    }));
+  };
+
   useEffect(() => {
     if (formData.package && formData.roomType) {
       const selectedPackage = packages.find(pkg => pkg.id === formData.package);
@@ -214,7 +222,6 @@ const Booking: React.FC = () => {
     }
   }, [formData.package, formData.roomType]);
 
-  // Fonction de validation des champs
   const validateField = (name: string, value: string): string => {
     switch (name) {
       case 'firstName':
@@ -258,7 +265,6 @@ const Booking: React.FC = () => {
     return '';
   };
 
-  // Mise à jour de handleInputChange pour inclure la validation
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -266,7 +272,6 @@ const Booking: React.FC = () => {
       [name]: value
     }));
 
-    // Valider le champ
     const error = validateField(name, value);
     setErrors(prev => ({
       ...prev,
@@ -274,12 +279,10 @@ const Booking: React.FC = () => {
     }));
   };
 
-  // Validation du formulaire complet
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
     let isValid = true;
 
-    // Valider chaque champ
     Object.entries(formData).forEach(([key, value]) => {
       if (key === 'message') return; // Le message est optionnel
       
@@ -290,7 +293,6 @@ const Booking: React.FC = () => {
       }
     });
 
-    // Vérifier si un forfait et un type de chambre sont sélectionnés
     if (!formData.package) {
       newErrors.package = 'Veuillez sélectionner un forfait';
       isValid = false;
@@ -304,7 +306,6 @@ const Booking: React.FC = () => {
     return isValid;
   };
 
-  // Gestion des changements dans le formulaire
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
@@ -327,7 +328,6 @@ const Booking: React.FC = () => {
       setSelectedPackage(foundPackage);
       setShowPayment(true);
 
-      // Préparation des données à envoyer
       const dataToSend = new URLSearchParams();
       dataToSend.append('firstName', formData.firstName.trim());
       dataToSend.append('lastName', formData.lastName.trim());
@@ -344,10 +344,8 @@ const Booking: React.FC = () => {
       dataToSend.append('prix_total', totalPrice.toString());
       dataToSend.append('message', formData.message.trim());
 
-      // Log pour débogage
       console.log('Données envoyées:', Object.fromEntries(dataToSend));
 
-      // Construction de l'URL avec les paramètres
       const urlWithParams = `${GOOGLE_SCRIPT_URL}?${dataToSend.toString()}`;
       
       await fetch(urlWithParams, {
@@ -369,7 +367,6 @@ const Booking: React.FC = () => {
     }
   };
 
-  // Fonction de partage
   const handleShare = async () => {
     const shareData = {
       title: 'Réservation Monhajj',
@@ -381,7 +378,6 @@ const Booking: React.FC = () => {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        // Fallback pour les navigateurs qui ne supportent pas l'API de partage
         navigator.clipboard.writeText(window.location.href);
         alert('Lien copié ! Partagez-le avec vos amis intéressés par le voyage.');
       }
@@ -437,7 +433,6 @@ const Booking: React.FC = () => {
 
   return (
     <div id="top" className="min-h-screen bg-dark-200 py-12 px-4 sm:px-6 lg:px-8 relative">
-      {/* Bouton retour en haut */}
       {showScrollTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -460,7 +455,6 @@ const Booking: React.FC = () => {
         </button>
       )}
       <div className="max-w-3xl mx-auto bg-dark-100 rounded-lg shadow-xl p-6 sm:p-8 relative">
-        {/* Bouton retour */}
         <button
           onClick={() => navigate('/')}
           className="mb-6 flex items-center text-yellow-500 hover:text-yellow-600 transition-colors duration-200"
@@ -471,7 +465,6 @@ const Booking: React.FC = () => {
           Retour à l'accueil
         </button>
 
-        {/* Bouton de partage */}
         <div className="flex justify-end mb-4">
           <button
             onClick={handleShare}
@@ -489,7 +482,6 @@ const Booking: React.FC = () => {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Informations personnelles */}
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-yellow-light">Informations personnelles</h3>
             
@@ -675,7 +667,6 @@ const Booking: React.FC = () => {
             </div>
           </div>
 
-          {/* Choix du forfait et de la chambre */}
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-yellow-light">Choix du forfait</h3>
             
@@ -714,7 +705,7 @@ const Booking: React.FC = () => {
                 name="roomType"
                 required
                 value={formData.roomType}
-                onChange={handleInputChange}
+                onChange={handleRoomTypeChange}
                 className={`mt-1 block w-full py-3 px-4 border ${
                   errors.roomType ? 'border-red-500' : 'border-gray-300'
                 } bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base`}
@@ -749,7 +740,6 @@ const Booking: React.FC = () => {
             )}
           </div>
 
-          {/* Message optionnel */}
           <div className="mt-12 mb-8">
             <label htmlFor="message" className="block text-lg font-medium text-gray-700 mb-3">
               Un message à nous transmettre ?
@@ -765,7 +755,6 @@ const Booking: React.FC = () => {
             />
           </div>
 
-          {/* Bouton de soumission */}
           <div className="flex justify-center mt-6">
             <button
               type="submit"
@@ -791,7 +780,6 @@ const Booking: React.FC = () => {
           </div>
         </form>
 
-        {/* Messages de statut */}
         {showSuccess && submitStatus === 'success' && (
           <div className="fixed top-4 right-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded shadow-lg animate-fade-in">
             <div className="flex items-center justify-between">
@@ -821,12 +809,6 @@ const Booking: React.FC = () => {
             <p className="text-green-500 text-center">
               Votre réservation a été enregistrée avec succès !
             </p>
-            {/* <button
-              onClick={() => navigate('/')}
-              className="px-6 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors duration-200"
-            >
-              Retourner à l'accueil
-            </button> */}
           </div>
         )}
 
