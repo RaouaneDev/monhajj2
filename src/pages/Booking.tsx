@@ -36,6 +36,9 @@ const roomTypes = [
   { id: 'double', name: 'Chambre Double', multiplier: 1.5, description: 'Chambre pour 2 personnes' },
 ];
 
+// Assurez-vous que la clé publique est correctement chargée
+console.log('Stripe Public Key:', process.env.REACT_APP_STRIPE_PUBLIC_KEY);
+
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYibyVKJiUILauZcrVqcFm1I20S4-_DKIS2LYcog38VWrj8KDkJ_MO2OzSR87_f8X_/exec';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || '');
