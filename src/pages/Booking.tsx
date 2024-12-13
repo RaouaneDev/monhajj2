@@ -354,6 +354,7 @@ const Booking: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [bookingType, setBookingType] = useState<'registration' | 'payment'>('registration');
+  const [numberOfPersons, setNumberOfPersons] = useState(1);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -392,11 +393,11 @@ const Booking: React.FC = () => {
   };
 
   const calculateTotal = useCallback(() => {
-    if (!selectedPackage || !selectedRoomType || !numberOfPersons) return 0;
-    const basePrice = selectedPackage.price;
-    const roomPrice = selectedRoomType === 'double' ? 0 : 500; // Supplément chambre single
-    return (basePrice + roomPrice) * numberOfPersons;
-  }, [selectedPackage, selectedRoomType, numberOfPersons]);
+    if (!selectedPackage || !selectedRoomType) return 0;
+    const roomTypeObj = roomTypes.find(r => r.id === selectedRoomType);
+    if (!roomTypeObj) return 0;
+    return selectedPackage.price * roomTypeObj.multiplier;
+  }, [selectedPackage, selectedRoomType]);
 
   useEffect(() => {
     const total = calculateTotal();
