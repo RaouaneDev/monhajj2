@@ -37,6 +37,7 @@ interface FormData {
   roomType: string;
   message: string;
   numberOfPersons: string;
+  termsAccepted: boolean;
 }
 
 // Configuration des forfaits
@@ -261,7 +262,8 @@ const initialFormState: FormData = {
   package: '',
   roomType: '',
   message: '',
-  numberOfPersons: '1'
+  numberOfPersons: '1',
+  termsAccepted: false
 };
 
 const Booking: React.FC = () => {
@@ -389,6 +391,8 @@ const Booking: React.FC = () => {
         return /^[0-9]{10}$/.test(value)
           ? ''
           : 'Le numéro de téléphone doit contenir 10 chiffres';
+      case 'termsAccepted':
+        return value === 'true' ? '' : 'Vous devez accepter les conditions d\'inscription';
       default:
         return '';
     }
@@ -500,22 +504,29 @@ const Booking: React.FC = () => {
     }
   };
 
-  const handlePaymentSuccess = () => {
-    const selectedRoom = roomTypes.find(room => room.id === formData.roomType) || roomTypes[0];
-    const selectedPkg = packages.find(pkg => pkg.id === formData.package);
-
-    navigate('/payment-success', {
+  const handlePaymentSuccess = useCallback(() => {
+    setSubmitStatus('success');
+    const registrationData = {
+      ...formData,
+      bookingType: 'payment',
+      packageDetails: selectedPackage,
+      roomDetails: roomTypes.find(r => r.id === formData.roomType),
+      totalPrice,
+      registrationDate: new Date().toISOString(),
+      numberOfPersons: parseInt(formData.numberOfPersons)
+    };
+    
+    navigate('/registration-success', {
       state: {
-        bookingDetails: {
-          ...formData,
-          amount: deposit,
-          remainingAmount: remainingAmount,
-          package: selectedPkg?.name || '',
-          roomType: selectedRoom.name
-        }
+        formData,
+        packageDetails: selectedPackage,
+        roomDetails: roomTypes.find(r => r.id === formData.roomType),
+        totalPrice,
+        numberOfPersons: parseInt(formData.numberOfPersons),
+        paymentCompleted: true
       }
     });
-  };
+  }, [formData, selectedPackage, roomTypes, totalPrice, navigate]);
 
   return (
     <div className="relative min-h-screen bg-gray-50">
@@ -867,52 +878,67 @@ const Booking: React.FC = () => {
             )}
           </div>
 
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold mb-4">Type de réservation</h3>
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => handleBookingTypeChange('registration')}
-                className={`flex-1 py-3 px-6 rounded-lg text-center ${
-                  bookingType === 'registration'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Inscription uniquement
-              </button>
-              <button
-                type="button"
-                onClick={() => handleBookingTypeChange('payment')}
-                className={`flex-1 py-3 px-6 rounded-lg text-center ${
-                  bookingType === 'payment'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Réservation avec paiement
-              </button>
-            </div>
-            <p className="mt-2 text-sm text-gray-600">
-              {bookingType === 'registration' 
-                ? "L'inscription vous permet de réserver votre place sans paiement immédiat."
-                : "La réservation avec paiement confirme immédiatement votre place."}
-            </p>
-          </div>
-
-          <div className="mt-12 mb-8">
-            <label htmlFor="message" className="block text-lg font-medium text-gray-700 mb-3">
+          {/* Message optionnel */}
+          <div className="mt-6">
+            <label htmlFor="message" className="block text-sm font-medium text-gray-300">
               Un message à nous transmettre ?
             </label>
-            <textarea
-              id="message"
-              name="message"
-              value={formData.message}
-              onChange={handleInputChange}
-              className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-base"
-              rows={4}
-              placeholder="Message supplémentaire (optionnel)"
-            />
+            <div className="mt-1">
+              <textarea
+                id="message"
+                name="message"
+                rows={4}
+                value={formData.message}
+                onChange={handleInputChange}
+                className="shadow-sm focus:ring-yellow-500 focus:border-yellow-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                placeholder="Votre message (optionnel)"
+              />
+            </div>
+          </div>
+
+          {/* Message d'information et confirmation */}
+          <div className="mt-6">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">
+                    Information importante
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p>
+                      En soumettant ce formulaire, vous reconnaissez que :
+                    </p>
+                    <ul className="list-disc pl-5 mt-2 space-y-1">
+                      <li>Votre inscription sera traitée par notre équipe dans les plus brefs délais</li>
+                      <li>Un acompte de 30% sera requis pour confirmer définitivement votre réservation</li>
+                      <li>Nous vous contacterons au numéro fourni pour finaliser votre dossier</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  required
+                  className="form-checkbox h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+                  checked={formData.termsAccepted || false}
+                  onChange={(e) => setFormData(prev => ({ ...prev, termsAccepted: e.target.checked }))}
+                />
+                <span className="ml-2 text-sm text-gray-300">
+                  J'ai lu et j'accepte les conditions d'inscription mentionnées ci-dessus
+                </span>
+              </label>
+              {errors.termsAccepted && (
+                <p className="mt-1 text-sm text-red-500">{errors.termsAccepted}</p>
+              )}
+            </div>
           </div>
 
           <div className="mt-6 flex justify-between items-center">
@@ -981,7 +1007,7 @@ const Booking: React.FC = () => {
             </div>
           )}
 
-          {showPayment && selectedPackage && (
+          {showPayment && (
             <div className="mt-8">
               <Elements stripe={stripePromise}>
                 <PaymentForm 

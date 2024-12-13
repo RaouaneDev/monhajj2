@@ -4,7 +4,7 @@ import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 const RegistrationSuccess: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { formData, packageDetails, roomDetails, totalPrice, numberOfPersons } = location.state || {};
+  const { formData, packageDetails, roomDetails, totalPrice, numberOfPersons, paymentCompleted } = location.state || {};
 
   if (!formData || !packageDetails || !roomDetails) {
     return <Navigate to="/booking" replace />;
@@ -20,9 +20,21 @@ const RegistrationSuccess: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Réservation enregistrée avec succès !</h2>
-            <p className="text-lg text-gray-600 mb-2">Nous vous contacterons bientôt au {formData.phone} pour finaliser votre réservation.</p>
-            <p className="text-sm text-gray-500">Veuillez garder votre téléphone à proximité.</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              {paymentCompleted ? 'Paiement effectué avec succès !' : 'Réservation enregistrée avec succès !'}
+            </h2>
+            <p className="text-lg text-gray-600 mb-2">
+              {paymentCompleted 
+                ? 'Votre paiement a été traité et votre réservation est confirmée.'
+                : `Nous vous contacterons bientôt au ${formData.phone} pour finaliser votre réservation.`
+              }
+            </p>
+            <p className="text-sm text-gray-500">
+              {paymentCompleted 
+                ? 'Un email de confirmation vous sera envoyé dans les prochaines minutes.'
+                : 'Veuillez garder votre téléphone à proximité.'
+              }
+            </p>
           </div>
 
           <div className="border-t border-b border-gray-200 py-6 my-6">
