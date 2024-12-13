@@ -504,49 +504,18 @@ const Booking: React.FC = () => {
     }
   };
 
-  const handlePaymentSuccess = async () => {
-    try {
-      setIsLoading(true);
-      const dataToSend = new URLSearchParams();
-      
-      if (!selectedPackage) {
-        throw new Error('No package selected');
+  const handlePaymentSuccess = () => {
+    navigate('/payment-success', {
+      state: {
+        bookingDetails: {
+          ...formData,
+          amount: deposit,
+          remainingAmount: remainingAmount,
+          package: selectedPackage?.name || '',
+          roomType: selectedRoomType?.name || ''
+        }
       }
-
-      dataToSend.append('firstName', formData.firstName.trim());
-      dataToSend.append('lastName', formData.lastName.trim());
-      dataToSend.append('address', formData.address.trim());
-      dataToSend.append('gender', formData.gender.trim());
-      dataToSend.append('age', formData.age.trim());
-      dataToSend.append('nationality', formData.nationality.trim());
-      dataToSend.append('phone', formData.phone.trim());
-      dataToSend.append('email', formData.email.trim());
-      dataToSend.append('formule', selectedPackage.name);
-      dataToSend.append('prix_base', selectedPackage.price.toString());
-      dataToSend.append('type_chambre', selectedRoomType);
-      dataToSend.append('prix_total', totalPrice.toString());
-      dataToSend.append('message', formData.message.trim());
-
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: dataToSend,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save booking details');
-      }
-
-      setShowSuccess(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-      console.error('Error saving booking:', error);
-      setErrors(prev => ({
-        ...prev,
-        submit: error instanceof Error ? error.message : 'Failed to save booking'
-      }));
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (

@@ -8,6 +8,7 @@ import GuideOmra from './pages/GuideOmra';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Booking from './pages/Booking';
+import PaymentSuccess from './pages/PaymentSuccess';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
         <Route path="booking" element={<Booking />} />
+        <Route path="payment-success" element={<PaymentSuccess />} />
       </Routes>
     </MainLayout>
   );
