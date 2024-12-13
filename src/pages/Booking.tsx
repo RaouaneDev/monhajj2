@@ -67,7 +67,6 @@ const roomTypes: RoomType[] = [
   { id: 'double', name: 'Chambre Double', multiplier: 1.5, description: 'Chambre pour 2 personnes' },
 ];
 
-const API_URL = process.env.REACT_APP_API_URL;
 const STRIPE_PUBLIC_KEY = process.env.REACT_APP_STRIPE_PUBLIC_KEY;
 
 const initialFormState: FormData = {
