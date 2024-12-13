@@ -46,7 +46,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
     if (!stripe || !elements) {
@@ -276,8 +276,8 @@ const Booking: React.FC = () => {
   };
 
   // Gestion des changements dans le formulaire
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     
     if (!validateForm()) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
