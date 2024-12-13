@@ -479,11 +479,12 @@ const Booking: React.FC = () => {
     
     try {
       if (bookingType === 'registration') {
+        // Pour l'inscription uniquement
         const registrationData = {
           ...formData,
           bookingType: 'registration',
           packageDetails: selectedPackage,
-          roomDetails: selectedRoomType,
+          roomDetails: roomTypes.find(r => r.id === formData.roomType),
           totalPrice,
           registrationDate: new Date().toISOString()
         };
@@ -496,12 +497,17 @@ const Booking: React.FC = () => {
           state: { 
             formData,
             packageDetails: selectedPackage,
-            roomDetails: selectedRoomType,
+            roomDetails: roomTypes.find(r => r.id === formData.roomType),
             totalPrice 
           }
         });
       } else {
-        // Proceed with payment flow
+        // Pour le paiement immédiat
+        const foundPackage = packages.find(p => p.id === formData.package);
+        if (!foundPackage) {
+          throw new Error('Package not found');
+        }
+        setSelectedPackage(foundPackage);
         setShowPayment(true);
       }
     } catch (error) {
