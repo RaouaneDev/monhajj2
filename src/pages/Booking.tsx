@@ -54,25 +54,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
   const cardElementOptions = {
     style: {
       base: {
-        color: '#32325d',
-        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-        fontSmoothing: 'antialiased',
+        color: '#374151',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         fontSize: '16px',
+        lineHeight: '1.5',
         '::placeholder': {
-          color: '#aab7c4'
+          color: '#9CA3AF'
         },
-        backgroundColor: '#fff',
-        padding: '10px 12px',
+        padding: '0.75rem 1rem',
       },
       invalid: {
-        color: '#fa755a',
-        iconColor: '#fa755a'
+        color: '#EF4444',
+        iconColor: '#EF4444'
       }
-    },
-    classes: {
-      base: 'stripe-element',
-      focus: 'stripe-element--focus',
-      invalid: 'stripe-element--invalid'
     }
   };
 
@@ -135,25 +129,41 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">Paiement sécurisé</h3>
-        <div className="mb-4">
-          <p className="text-gray-600 mb-2">Montant à payer : {amount}€</p>
+    <div className="mt-8 space-y-6">
+      <div className="bg-dark-100 p-6 rounded-lg">
+        <h3 className="text-xl font-semibold mb-4 text-yellow-light">Paiement sécurisé</h3>
+        
+        <div className="mb-6 bg-blue-50 p-4 rounded-lg">
+          <p className="text-blue-800 font-medium">
+            Montant total : {amount}€
+          </p>
+          <p className="text-blue-800 font-medium mt-2">
+            Acompte à payer (20%) : {Math.ceil(amount * 0.2)}€
+          </p>
+          <p className="text-sm text-blue-600 mt-2">
+            Le reste du montant ({Math.floor(amount * 0.8)}€) sera à régler avant le départ.
+          </p>
         </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="p-3 border rounded-md bg-gray-50">
-            <CardElement options={cardElementOptions} className="p-2" />
-          </div>
-          {error && (
-            <div className="text-red-500 text-sm mt-2">
-              {error}
+          <div className="space-y-2">
+            <label className="block text-lg font-medium text-gray-700">
+              Informations de carte
+            </label>
+            <div className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus-within:ring-1 focus-within:ring-yellow-500 focus-within:border-yellow-500">
+              <CardElement options={cardElementOptions} />
             </div>
-          )}
+            {error && (
+              <p className="text-red-500 text-sm mt-1">
+                {error}
+              </p>
+            )}
+          </div>
+
           <button
             type="submit"
             disabled={!stripe || processing}
-            className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 ${
+            className={`w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 ${
               processing ? 'opacity-75 cursor-not-allowed' : ''
             }`}
           >
