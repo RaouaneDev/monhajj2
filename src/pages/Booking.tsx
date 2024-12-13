@@ -268,19 +268,12 @@ const initialFormState: FormData = {
 
 const Booking: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [selectedRoomType, setSelectedRoomType] = useState<string>('');
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [totalPrice, setTotalPrice] = useState(0);
-  const [deposit, setDeposit] = useState(0);
-  const [remainingAmount, setRemainingAmount] = useState(0);
-  const [formData, setFormData] = useState(initialFormState);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showPayment, setShowPayment] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [currentStep, setCurrentStep] = useState<'form' | 'payment'>('form');
   const [bookingType, setBookingType] = useState<'registration' | 'payment'>('registration');
+  const [currentStep, setCurrentStep] = useState<'form' | 'payment'>('form');
+  const [formData, setFormData] = useState(initialFormState);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [showPayment, setShowPayment] = useState(false);
 
   const handleNextStep = () => {
     if (validateForm()) {
@@ -296,22 +289,6 @@ const Booking: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 100);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
-
   const updateTotalPrice = useCallback((packageId: string, roomTypeId: string) => {
     const selectedPkg = packages.find(p => p.id === packageId);
     const selectedRoom = roomTypes.find(r => r.id === roomTypeId);
@@ -319,25 +296,21 @@ const Booking: React.FC = () => {
     
     if (selectedPkg && selectedRoom) {
       const total = selectedPkg.price * selectedRoom.multiplier * numberOfPersons;
-      setTotalPrice(total);
-      setDeposit(total * 0.3); // 30% deposit
-      setRemainingAmount(total * 0.7); // 70% remaining
+      const deposit = total * 0.3; // 30% deposit
+      const remainingAmount = total * 0.7; // 70% remaining
+      return { total, deposit, remainingAmount };
     }
   }, [formData.numberOfPersons]);
 
   const handlePackageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const packageId = event.target.value;
-    const selectedPkg = packages.find(p => p.id === packageId);
-    setSelectedPackage(selectedPkg || null);
     setFormData(prev => ({ ...prev, package: packageId }));
-    updateTotalPrice(packageId, formData.roomType);
   };
 
   const handleRoomTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const roomType = event.target.value;
     setSelectedRoomType(roomType);
     setFormData(prev => ({ ...prev, roomType }));
-    updateTotalPrice(formData.package, roomType);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -349,7 +322,8 @@ const Booking: React.FC = () => {
 
     // Update total price when number of persons changes
     if (name === 'numberOfPersons') {
-      updateTotalPrice(formData.package, formData.roomType);
+      const { total, deposit, remainingAmount } = updateTotalPrice(formData.package, formData.roomType);
+      console.log(total, deposit, remainingAmount);
     }
 
     const error = validateField(name, value);
@@ -358,23 +332,6 @@ const Booking: React.FC = () => {
       [name]: error
     }));
   };
-
-  const calculateTotal = useCallback(() => {
-    if (!selectedPackage || !selectedRoomType) return 0;
-    const roomTypeObj = roomTypes.find(r => r.id === selectedRoomType);
-    const numberOfPersons = parseInt(formData.numberOfPersons) || 1;
-    if (!roomTypeObj) return 0;
-    return selectedPackage.price * roomTypeObj.multiplier * numberOfPersons;
-  }, [selectedPackage, selectedRoomType, formData.numberOfPersons]);
-
-  useEffect(() => {
-    const total = calculateTotal();
-    const deposit = Math.ceil(total * 0.2);
-    const remainingAmount = total - deposit;
-    setTotalPrice(total);
-    setDeposit(deposit);
-    setRemainingAmount(remainingAmount);
-  }, [calculateTotal]);
 
   const validateField = (name: string, value: string): string => {
     switch (name) {
@@ -442,45 +399,27 @@ const Booking: React.FC = () => {
       return;
     }
 
-    setIsSubmitting(true);
-    setSubmitStatus('idle');
-    
     try {
-      if (bookingType === 'registration') {
-        const registrationData = {
-          ...formData,
-          bookingType: 'registration',
-          packageDetails: selectedPackage,
+      const registrationData = {
+        ...formData,
+        bookingType: 'registration',
+        packageDetails: packages.find(p => p.id === formData.package),
+        roomDetails: roomTypes.find(r => r.id === formData.roomType),
+        registrationDate: new Date().toISOString(),
+        numberOfPersons: parseInt(formData.numberOfPersons)
+      };
+      
+      console.log('Registration data:', registrationData);
+      navigate('/registration-success', {
+        state: {
+          formData,
+          packageDetails: packages.find(p => p.id === formData.package),
           roomDetails: roomTypes.find(r => r.id === formData.roomType),
-          totalPrice,
-          registrationDate: new Date().toISOString(),
           numberOfPersons: parseInt(formData.numberOfPersons)
-        };
-        
-        console.log('Registration data:', registrationData);
-        setSubmitStatus('success');
-        navigate('/registration-success', {
-          state: {
-            formData,
-            packageDetails: selectedPackage,
-            roomDetails: roomTypes.find(r => r.id === formData.roomType),
-            totalPrice,
-            numberOfPersons: parseInt(formData.numberOfPersons)
-          }
-        });
-      } else {
-        const foundPackage = packages.find(p => p.id === formData.package);
-        if (!foundPackage) {
-          throw new Error('Package not found');
         }
-        setSelectedPackage(foundPackage);
-        setShowPayment(true);
-      }
+      });
     } catch (error) {
       console.error('Error during form submission:', error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -504,13 +443,11 @@ const Booking: React.FC = () => {
   };
 
   const handlePaymentSuccess = useCallback(() => {
-    setSubmitStatus('success');
     const registrationData = {
       ...formData,
       bookingType: 'payment',
-      packageDetails: selectedPackage,
+      packageDetails: packages.find(p => p.id === formData.package),
       roomDetails: roomTypes.find(r => r.id === formData.roomType),
-      totalPrice,
       registrationDate: new Date().toISOString(),
       numberOfPersons: parseInt(formData.numberOfPersons)
     };
@@ -518,23 +455,20 @@ const Booking: React.FC = () => {
     navigate('/registration-success', {
       state: {
         formData,
-        packageDetails: selectedPackage,
+        packageDetails: packages.find(p => p.id === formData.package),
         roomDetails: roomTypes.find(r => r.id === formData.roomType),
-        totalPrice,
         numberOfPersons: parseInt(formData.numberOfPersons),
         paymentCompleted: true
       }
     });
-  }, [formData, selectedPackage, totalPrice, navigate]);
+  }, [formData, navigate]);
 
   return (
     <div className="relative min-h-screen bg-gray-50">
       {/* Bouton de retour en haut fixe */}
       <button
-        onClick={scrollToTop}
-        className={`fixed bottom-8 right-8 z-50 p-3 rounded-full bg-yellow-600 text-white shadow-lg transition-opacity duration-300 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 ${
-          showScrollTop ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className={`fixed bottom-8 right-8 z-50 p-3 rounded-full bg-yellow-600 text-white shadow-lg transition-opacity duration-300 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500`}
         aria-label="Retour en haut"
       >
         <svg
@@ -859,14 +793,14 @@ const Booking: React.FC = () => {
               </div>
             </div>
 
-            {totalPrice && (
+            {updateTotalPrice(formData.package, formData.roomType) && (
               <div className="mt-4 p-4 bg-gray-200 rounded-md">
                 <p className="text-lg font-semibold text-yellow-light">
-                  Prix total: {totalPrice.toLocaleString()}€
+                  Prix total: {updateTotalPrice(formData.package, formData.roomType).total.toLocaleString()}€
                 </p>
                 <div className="mt-6 bg-blue-50 p-4 rounded-lg">
                   <p className="text-blue-800 font-medium">
-                    Acompte requis (30%): {deposit.toLocaleString()}€
+                    Acompte requis (30%): {updateTotalPrice(formData.package, formData.roomType).deposit.toLocaleString()}€
                   </p>
                   <p className="text-sm text-blue-600 mt-2">
                     Un acompte minimum de 30% est requis pour confirmer votre réservation. 
@@ -941,34 +875,12 @@ const Booking: React.FC = () => {
           </div>
 
           <div className="mt-6 flex justify-between items-center">
-            {currentStep === 'form' ? (
-              <button
-                type="button"
-                onClick={handleNextStep}
-                className="w-full bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Chargement...' : 'Continuer vers le paiement'}
-              </button>
-            ) : (
-              <div className="w-full flex gap-4">
-                <button
-                  type="button"
-                  onClick={handlePreviousStep}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                  disabled={isSubmitting}
-                >
-                  Retour aux informations
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Traitement en cours...' : 'Procéder au paiement'}
-                </button>
-              </div>
-            )}
+            <button
+              type="submit"
+              className="w-full bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+            >
+              Valider l'inscription
+            </button>
           </div>
 
           <div className="mt-4 text-center">
@@ -984,35 +896,13 @@ const Booking: React.FC = () => {
             </button>
           </div>
 
-          {submitStatus === 'success' && (
-            <div className="mt-6 flex flex-col items-center space-y-4">
-              <p className="text-green-500 text-center">
-                Votre réservation a été enregistrée avec succès !
-              </p>
-            </div>
-          )}
-
-          {submitStatus === 'error' && (
-            <div className="mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded animate-fade-in">
-              <div className="flex items-center">
-                <svg className="h-5 w-5 text-red-500 mr-2" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                </svg>
-                <div>
-                  <p className="font-bold">Erreur lors de l'envoi</p>
-                  <p className="text-sm">Veuillez réessayer ou nous contacter au +33 7 75 70 24 64</p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {showPayment && (
             <div className="mt-8">
               <Elements stripe={stripePromise}>
                 <PaymentForm 
-                  amount={totalPrice} 
-                  deposit={deposit}
-                  remainingAmount={remainingAmount}
+                  amount={updateTotalPrice(formData.package, formData.roomType).total} 
+                  deposit={updateTotalPrice(formData.package, formData.roomType).deposit}
+                  remainingAmount={updateTotalPrice(formData.package, formData.roomType).remainingAmount}
                   onSuccess={handlePaymentSuccess}
                 />
               </Elements>
@@ -1022,70 +912,6 @@ const Booking: React.FC = () => {
       </div>
     </div>
   );
-};
-
-const handlePaymentSuccess = useCallback(() => {
-  setSubmitStatus('success');
-  const registrationData = {
-    ...formData,
-    bookingType: 'payment',
-    packageDetails: selectedPackage,
-    roomDetails: roomTypes.find(r => r.id === formData.roomType),
-    totalPrice,
-    registrationDate: new Date().toISOString(),
-    numberOfPersons: parseInt(formData.numberOfPersons)
-  };
-  
-  navigate('/registration-success', {
-    state: {
-      formData,
-      packageDetails: selectedPackage,
-      roomDetails: roomTypes.find(r => r.id === formData.roomType),
-      totalPrice,
-      numberOfPersons: parseInt(formData.numberOfPersons),
-      paymentCompleted: true
-    }
-  });
-}, [formData, selectedPackage, totalPrice, navigate]);
-
-const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  
-  if (!validateForm()) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    return;
-  }
-
-  setIsSubmitting(true);
-  setSubmitStatus('idle');
-  
-  try {
-    const selectedRoom = roomTypes.find(r => r.id === formData.roomType);
-    if (currentStep === 'form') {
-      setCurrentStep('payment');
-    } else {
-      const registrationData = {
-        ...formData,
-        bookingType: 'payment',
-        packageDetails: selectedPackage,
-        roomDetails: selectedRoom,
-        totalPrice,
-        registrationDate: new Date().toISOString(),
-        numberOfPersons: parseInt(formData.numberOfPersons)
-      };
-      
-      // Utilisation des données d'inscription
-      console.log('Registration data:', registrationData);
-      
-      // Continuer avec le processus de paiement
-      setShowPayment(true);
-    }
-  } catch (error) {
-    console.error('Error during form submission:', error);
-    setSubmitStatus('error');
-  } finally {
-    setIsSubmitting(false);
-  }
 };
 
 export default Booking;
