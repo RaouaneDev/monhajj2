@@ -10,6 +10,7 @@ import Contact from './pages/Contact';
 import Booking from './pages/Booking';
 import PaymentSuccess from './pages/PaymentSuccess';
 import RegistrationSuccess from './pages/RegistrationSuccess';
+import Payment from './pages/Payment';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/booking" element={<Booking />} />
+        <Route path="/payment" element={<Payment />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/registration-success" element={<RegistrationSuccess />} />
       </Routes>
