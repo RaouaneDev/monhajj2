@@ -915,65 +915,82 @@ const Booking: React.FC = () => {
             />
           </div>
 
-          <div className="flex justify-center mt-6">
+          <div className="mt-6 flex justify-between items-center">
+            {currentStep === 'form' ? (
+              <button
+                type="button"
+                onClick={handleNextStep}
+                className="w-full bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+              >
+                Continuer vers le paiement
+              </button>
+            ) : (
+              <div className="w-full flex gap-4">
+                <button
+                  type="button"
+                  onClick={handlePreviousStep}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Retour aux informations
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                >
+                  Procéder au paiement
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 text-center">
             <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white text-lg font-medium transition-all duration-200 ${
-                isSubmitting
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transform hover:scale-105'
-              }`}
+              type="button"
+              onClick={handleShare}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
             >
-              {isSubmitting ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Envoi en cours...
-                </span>
-              ) : (
-                'Réserver maintenant'
-              )}
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+              </svg>
+              Partager
             </button>
           </div>
-        </form>
 
-        {submitStatus === 'success' && (
-          <div className="mt-6 flex flex-col items-center space-y-4">
-            <p className="text-green-500 text-center">
-              Votre réservation a été enregistrée avec succès !
-            </p>
-          </div>
-        )}
+          {submitStatus === 'success' && (
+            <div className="mt-6 flex flex-col items-center space-y-4">
+              <p className="text-green-500 text-center">
+                Votre réservation a été enregistrée avec succès !
+              </p>
+            </div>
+          )}
 
-        {submitStatus === 'error' && (
-          <div className="mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded animate-fade-in">
-            <div className="flex items-center">
-              <svg className="h-5 w-5 text-red-500 mr-2" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-              </svg>
-              <div>
-                <p className="font-bold">Erreur lors de l'envoi</p>
-                <p className="text-sm">Veuillez réessayer ou nous contacter au +33 7 75 70 24 64</p>
+          {submitStatus === 'error' && (
+            <div className="mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded animate-fade-in">
+              <div className="flex items-center">
+                <svg className="h-5 w-5 text-red-500 mr-2" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <div>
+                  <p className="font-bold">Erreur lors de l'envoi</p>
+                  <p className="text-sm">Veuillez réessayer ou nous contacter au +33 7 75 70 24 64</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {showPayment && selectedPackage && (
-          <div className="mt-8">
-            <Elements stripe={stripePromise}>
-              <PaymentForm 
-                amount={totalPrice} 
-                deposit={deposit}
-                remainingAmount={remainingAmount}
-                onSuccess={handlePaymentSuccess}
-              />
-            </Elements>
-          </div>
-        )}
+          {showPayment && selectedPackage && (
+            <div className="mt-8">
+              <Elements stripe={stripePromise}>
+                <PaymentForm 
+                  amount={totalPrice} 
+                  deposit={deposit}
+                  remainingAmount={remainingAmount}
+                  onSuccess={handlePaymentSuccess}
+                />
+              </Elements>
+            </div>
+          )}
+        </form>
       </div>
     </div>
   );
