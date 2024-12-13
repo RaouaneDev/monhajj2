@@ -137,6 +137,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, onSuccess }) => {
   );
 };
 
+interface Package {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+}
+
 const Booking: React.FC = () => {
   const navigate = useNavigate();
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -177,13 +184,15 @@ const Booking: React.FC = () => {
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPayment, setShowPayment] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [totalPrice, setTotalPrice] = useState<string>('');
+  const [selectedRoomType, setSelectedRoomType] = useState<string>('');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [showSuccess, setShowSuccess] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showPayment, setShowPayment] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState(null);
 
   // Calcul du prix total quand le forfait ou le type de chambre change
   useEffect(() => {
@@ -304,9 +313,16 @@ const Booking: React.FC = () => {
     setSubmitStatus('idle');
     
     try {
-      const selectedPackage = packages.find(pkg => pkg.id === formData.package);
-      const selectedRoom = roomTypes.find(room => room.id === formData.roomType);
-      
+      const foundPackage = packages.find(p => p.id === formData.package);
+      if (!foundPackage) {
+        throw new Error('Package not found');
+      }
+
+      setFormData(initialFormState);
+      setTotalPrice('');
+      setSelectedPackage(foundPackage);
+      setShowPayment(true);
+
       // Préparation des données à envoyer
       const dataToSend = new URLSearchParams();
       dataToSend.append('firstName', formData.firstName.trim());
@@ -317,10 +333,10 @@ const Booking: React.FC = () => {
       dataToSend.append('nationality', formData.nationality.trim());
       dataToSend.append('phone', formData.phone.trim());
       dataToSend.append('email', formData.email.trim());
-      dataToSend.append('formule', selectedPackage?.name || '');
-      dataToSend.append('prix_base', selectedPackage?.price.toString() || '');
-      dataToSend.append('type_chambre', selectedRoom?.name || '');
-      dataToSend.append('description_chambre', selectedRoom?.description || '');
+      dataToSend.append('formule', foundPackage.name);
+      dataToSend.append('prix_base', foundPackage.price.toString());
+      dataToSend.append('type_chambre', selectedRoomType);
+      dataToSend.append('description_chambre', roomTypes.find(room => room.id === formData.roomType)?.description || '');
       dataToSend.append('prix_total', totalPrice);
       dataToSend.append('message', formData.message.trim());
 
@@ -337,14 +353,13 @@ const Booking: React.FC = () => {
 
       setSubmitStatus('success');
       setShowSuccess(true);
-      setFormData(initialFormState);
-      setTotalPrice('');
-      setSelectedPackage(selectedPackage);
-      setShowPayment(true);
       
     } catch (error) {
-      console.error('Erreur lors de la soumission:', error);
-      setSubmitStatus('error');
+      console.error('Error during form submission:', error);
+      setErrors(prev => ({
+        ...prev,
+        submit: error instanceof Error ? error.message : 'An error occurred'
+      }));
     } finally {
       setIsSubmitting(false);
     }
