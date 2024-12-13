@@ -2,10 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import {
-  Elements,
-  CardNumberElement,
-  CardExpiryElement,
-  CardCvcElement,
+  CardElement,
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
@@ -99,41 +96,37 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [cardErrors, setCardErrors] = useState({
-    cardNumber: '',
-    cardExpiry: '',
-    cardCvc: ''
+    card: ''
   });
   const [isFormComplete, setIsFormComplete] = useState({
-    cardNumber: false,
-    cardExpiry: false,
-    cardCvc: false
+    card: false
   });
 
-  const handleCardChange = (event: any, field: string) => {
+  const handleCardChange = (event: any) => {
     if (event.error) {
       setCardErrors(prev => ({
         ...prev,
-        [field]: event.error.message
+        card: event.error.message
       }));
       setIsFormComplete(prev => ({
         ...prev,
-        [field]: false
+        card: false
       }));
     } else {
       setCardErrors(prev => ({
         ...prev,
-        [field]: ''
+        card: ''
       }));
       setIsFormComplete(prev => ({
         ...prev,
-        [field]: event.complete
+        card: event.complete
       }));
     }
   };
 
   const validateForm = () => {
-    const { cardNumber, cardExpiry, cardCvc } = isFormComplete;
-    if (!cardNumber || !cardExpiry || !cardCvc) {
+    const { card } = isFormComplete;
+    if (!card) {
       setError('Veuillez remplir tous les champs de la carte bancaire correctement.');
       return false;
     }
@@ -152,7 +145,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
     setError(null);
 
     try {
-      const cardElement = elements.getElement(CardNumberElement);
+      const cardElement = elements.getElement(CardElement);
       if (!cardElement) {
         setError('Erreur: Impossible de traiter le paiement');
         return;
@@ -203,46 +196,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, deposit, remainingAmo
               Numéro de carte
             </label>
             <div className="p-3 border rounded-md bg-white">
-              <CardNumberElement 
+              <CardElement 
                 options={cardStyle}
-                onChange={(e) => handleCardChange(e, 'cardNumber')}
+                onChange={handleCardChange}
               />
             </div>
-            {cardErrors.cardNumber && (
-              <p className="mt-1 text-sm text-red-600">{cardErrors.cardNumber}</p>
+            {cardErrors.card && (
+              <p className="mt-1 text-sm text-red-600">{cardErrors.card}</p>
             )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date d'expiration
-              </label>
-              <div className="p-3 border rounded-md bg-white">
-                <CardExpiryElement 
-                  options={cardStyle}
-                  onChange={(e) => handleCardChange(e, 'cardExpiry')}
-                />
-              </div>
-              {cardErrors.cardExpiry && (
-                <p className="mt-1 text-sm text-red-600">{cardErrors.cardExpiry}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                CVC
-              </label>
-              <div className="p-3 border rounded-md bg-white">
-                <CardCvcElement 
-                  options={cardStyle}
-                  onChange={(e) => handleCardChange(e, 'cardCvc')}
-                />
-              </div>
-              {cardErrors.cardCvc && (
-                <p className="mt-1 text-sm text-red-600">{cardErrors.cardCvc}</p>
-              )}
-            </div>
           </div>
         </div>
 
