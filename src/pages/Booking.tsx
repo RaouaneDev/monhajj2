@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import {
@@ -265,12 +265,12 @@ const Booking: React.FC = () => {
     }));
   };
 
-  const calculateTotal = () => {
+  const calculateTotal = useCallback(() => {
     if (!selectedPackage || !selectedRoomType || !numberOfPersons) return 0;
     const basePrice = selectedPackage.price;
     const roomPrice = selectedRoomType === 'double' ? 0 : 500; // Supplément chambre single
     return (basePrice + roomPrice) * numberOfPersons;
-  };
+  }, [selectedPackage, selectedRoomType, numberOfPersons]);
 
   useEffect(() => {
     const total = calculateTotal();
@@ -279,7 +279,7 @@ const Booking: React.FC = () => {
     setTotalPrice(total);
     setDeposit(deposit);
     setRemainingAmount(remainingAmount);
-  }, [selectedPackage, selectedRoomType, numberOfPersons]);
+  }, [calculateTotal]);
 
   const validateField = (name: string, value: string): string => {
     switch (name) {
