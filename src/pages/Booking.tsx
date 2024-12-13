@@ -403,7 +403,7 @@ const Booking: React.FC = () => {
 
   const handlePaymentSuccess = async () => {
     try {
-      // Envoyer les détails de la réservation à Google Sheets
+      setIsLoading(true);
       const dataToSend = new URLSearchParams();
       
       if (!selectedPackage) {
@@ -412,14 +412,16 @@ const Booking: React.FC = () => {
 
       dataToSend.append('firstName', formData.firstName.trim());
       dataToSend.append('lastName', formData.lastName.trim());
-      dataToSend.append('birthDate', formData.birthDate);
+      dataToSend.append('address', formData.address.trim());
+      dataToSend.append('gender', formData.gender.trim());
+      dataToSend.append('age', formData.age.trim());
       dataToSend.append('nationality', formData.nationality.trim());
       dataToSend.append('phone', formData.phone.trim());
       dataToSend.append('email', formData.email.trim());
       dataToSend.append('formule', selectedPackage.name);
       dataToSend.append('prix_base', selectedPackage.price.toString());
       dataToSend.append('type_chambre', selectedRoomType);
-      dataToSend.append('prix_total', totalPrice);
+      dataToSend.append('prix_total', totalPrice.toString());
       dataToSend.append('message', formData.message.trim());
 
       const response = await fetch(GOOGLE_SCRIPT_URL, {
