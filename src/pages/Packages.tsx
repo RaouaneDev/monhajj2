@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FlipCard from '../components/FlipCard';
 import { scrollToTop } from '../utils/scrollUtils';
 
 const Packages: React.FC = () => {
   const navigate = useNavigate();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const packages = [
     // Hajj Packages
@@ -13,8 +14,13 @@ const Packages: React.FC = () => {
       frontDescription: "Départ Juin 2025",
       backTitle: "Forfait Hajj Standard",
       backDescription: "✓ Vol aller-retour\n✓ Hébergement\n✓ Transport sur place\n✓ Accompagnement spirituel",
-      price: "6500€",
-      badge: "Places limitées"
+      price: "6500",
+      badge: "Places limitées",
+      id: "hajj-2025-standard",
+      type: 'hajj',
+      name: "Hajj 2025 Standard",
+      date: new Date(2025, 5, 15),
+      category: 'standard'
     },
     {
       frontTitle: "Hajj 2025 Confort",
@@ -22,7 +28,12 @@ const Packages: React.FC = () => {
       backTitle: "Forfait Hajj Confort (+30%)",
       backDescription: "✓ Tous les avantages Standard\n✓ Hôtels premium\n✓ Repas inclus\n✓ Service conciergerie",
       price: "8450€",
-      badge: "⭐"
+      badge: "⭐",
+      id: "hajj-2025-confort",
+      type: 'hajj',
+      name: "Hajj 2025 Confort",
+      date: new Date(2025, 5, 15),
+      category: 'confort'
     },
     {
       frontTitle: "Hajj 2025 Premium",
@@ -30,7 +41,12 @@ const Packages: React.FC = () => {
       backTitle: "Forfait Hajj Premium (+50%)",
       backDescription: "✓ Tous les avantages Confort\n✓ Hôtels 5 étoiles\n✓ Service VIP\n✓ Guide personnel",
       price: "9750€",
-      badge: "👑"
+      badge: "👑",
+      id: "hajj-2025-premium",
+      type: 'hajj',
+      name: "Hajj 2025 Premium",
+      date: new Date(2025, 5, 15),
+      category: 'premium'
     },
 
     // Omra Janvier
@@ -39,7 +55,12 @@ const Packages: React.FC = () => {
       frontDescription: "Départ Janvier 2025",
       backTitle: "Forfait Omra Standard",
       backDescription: "✓ Vol aller-retour\n✓ Hébergement\n✓ Transport sur place\n✓ Accompagnement spirituel",
-      price: "1500€"
+      price: "1500€",
+      id: "omra-janvier-standard",
+      type: 'omra',
+      name: "Omra Janvier Standard",
+      date: new Date(2025, 0, 15),
+      category: 'standard'
     },
     {
       frontTitle: "Omra Janvier Confort",
@@ -47,7 +68,12 @@ const Packages: React.FC = () => {
       backTitle: "Forfait Omra Confort",
       backDescription: "✓ Tous les avantages Standard\n✓ Hôtels premium\n✓ Repas inclus\n✓ Service conciergerie",
       price: "2000€",
-      badge: "⭐"
+      badge: "⭐",
+      id: "omra-janvier-confort",
+      type: 'omra',
+      name: "Omra Janvier Confort",
+      date: new Date(2025, 0, 15),
+      category: 'confort'
     },
     {
       frontTitle: "Omra Janvier Premium",
@@ -55,7 +81,12 @@ const Packages: React.FC = () => {
       backTitle: "Forfait Omra Premium",
       backDescription: "✓ Tous les avantages Confort\n✓ Hôtels 5 étoiles\n✓ Service VIP\n✓ Guide personnel",
       price: "2500€",
-      badge: "👑"
+      badge: "👑",
+      id: "omra-janvier-premium",
+      type: 'omra',
+      name: "Omra Janvier Premium",
+      date: new Date(2025, 0, 15),
+      category: 'premium'
     },
 
     // Ajout des forfaits Omra Février
@@ -64,7 +95,12 @@ const Packages: React.FC = () => {
       frontDescription: "Départ Février 2025",
       backTitle: "Forfait Omra Standard",
       backDescription: "✓ Vol aller-retour\n✓ Hébergement\n✓ Transport sur place\n✓ Accompagnement spirituel",
-      price: "1500€"
+      price: "1500€",
+      id: "omra-fevrier-standard",
+      type: 'omra',
+      name: "Omra Février Standard",
+      date: new Date(2025, 1, 15),
+      category: 'standard'
     },
     {
       frontTitle: "Omra Février Confort",
@@ -72,7 +108,12 @@ const Packages: React.FC = () => {
       backTitle: "Forfait Omra Confort",
       backDescription: "✓ Tous les avantages Standard\n✓ Hôtels premium\n✓ Repas inclus\n✓ Service conciergerie",
       price: "2000€",
-      badge: "⭐"
+      badge: "⭐",
+      id: "omra-fevrier-confort",
+      type: 'omra',
+      name: "Omra Février Confort",
+      date: new Date(2025, 1, 15),
+      category: 'confort'
     },
     {
       frontTitle: "Omra Février Premium",
@@ -80,7 +121,12 @@ const Packages: React.FC = () => {
       backTitle: "Forfait Omra Premium",
       backDescription: "✓ Tous les avantages Confort\n✓ Hôtels 5 étoiles\n✓ Service VIP\n✓ Guide personnel",
       price: "2500€",
-      badge: "👑"
+      badge: "👑",
+      id: "omra-fevrier-premium",
+      type: 'omra',
+      name: "Omra Février Premium",
+      date: new Date(2025, 1, 15),
+      category: 'premium'
     },
 
     // Omra Ramadhan (Mars)
@@ -90,7 +136,12 @@ const Packages: React.FC = () => {
       backTitle: "Forfait Omra Ramadhan Standard",
       backDescription: "✓ Vol aller-retour\n✓ Hébergement\n✓ Transport sur place\n✓ Accompagnement spirituel",
       price: "1500€",
-      badge: "RAMADHAN"
+      badge: "RAMADHAN",
+      id: "omra-ramadhan-standard",
+      type: 'omra',
+      name: "Omra Ramadhan Standard",
+      date: new Date(2025, 2, 15),
+      category: 'standard'
     },
     {
       frontTitle: "Omra Ramadhan Confort",
@@ -98,7 +149,12 @@ const Packages: React.FC = () => {
       backTitle: "Forfait Omra Ramadhan Confort",
       backDescription: "✓ Tous les avantages Standard\n✓ Hôtels premium\n✓ Repas inclus\n✓ Service conciergerie",
       price: "2000€",
-      badge: "RAMADHAN ⭐"
+      badge: "RAMADHAN ⭐",
+      id: "omra-ramadhan-confort",
+      type: 'omra',
+      name: "Omra Ramadhan Confort",
+      date: new Date(2025, 2, 15),
+      category: 'confort'
     },
     {
       frontTitle: "Omra Ramadhan Premium",
@@ -106,13 +162,30 @@ const Packages: React.FC = () => {
       backTitle: "Forfait Omra Ramadhan Premium",
       backDescription: "✓ Tous les avantages Confort\n✓ Hôtels 5 étoiles\n✓ Service VIP\n✓ Guide personnel",
       price: "2500€",
-      badge: "RAMADHAN 👑"
+      badge: "RAMADHAN 👑",
+      id: "omra-ramadhan-premium",
+      type: 'omra',
+      name: "Omra Ramadhan Premium",
+      date: new Date(2025, 2, 15),
+      category: 'premium'
     }
   ];
 
-  const handleBookingClick = () => {
+  const handleBookingClick = (pkg: any) => {
+    setSelectedId(pkg.id);
     scrollToTop();
-    navigate('/booking');
+    navigate('/booking', { 
+      state: { 
+        selectedPackage: {
+          id: pkg.id,
+          type: pkg.type,
+          name: pkg.name,
+          date: pkg.date,
+          price: parseInt(pkg.price),
+          category: pkg.category
+        } 
+      } 
+    });
   };
 
   return (
@@ -127,9 +200,12 @@ const Packages: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {packages.slice(0, 3).map((pkg, index) => (
             <div key={index} className="relative">
-              <FlipCard {...pkg} />
+              <FlipCard 
+                {...pkg} 
+                isSelected={selectedId === pkg.id}
+              />
               <button
-                onClick={handleBookingClick}
+                onClick={() => handleBookingClick(pkg)}
                 className="absolute bottom-4 right-4 bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-6 rounded-full shadow-lg transition-all duration-300 z-10"
               >
                 Réserver
@@ -147,9 +223,12 @@ const Packages: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {packages.slice(3, 9).map((pkg, index) => (
             <div key={index} className="relative">
-              <FlipCard {...pkg} />
+              <FlipCard 
+                {...pkg} 
+                isSelected={selectedId === pkg.id}
+              />
               <button
-                onClick={handleBookingClick}
+                onClick={() => handleBookingClick(pkg)}
                 className="absolute bottom-4 right-4 bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-6 rounded-full shadow-lg transition-all duration-300 z-10"
               >
                 Réserver
@@ -167,9 +246,12 @@ const Packages: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {packages.slice(9).map((pkg, index) => (
             <div key={index} className="relative">
-              <FlipCard {...pkg} />
+              <FlipCard 
+                {...pkg} 
+                isSelected={selectedId === pkg.id}
+              />
               <button
-                onClick={handleBookingClick}
+                onClick={() => handleBookingClick(pkg)}
                 className="absolute bottom-4 right-4 bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-6 rounded-full shadow-lg transition-all duration-300 z-10"
               >
                 Réserver

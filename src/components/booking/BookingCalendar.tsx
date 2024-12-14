@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface Package {
   id: string;
@@ -11,9 +11,12 @@ interface Package {
 
 interface BookingCalendarProps {
   onSelect: (packageInfo: Package) => void;
+  selectedPackageId?: string;
 }
 
-export const BookingCalendar: React.FC<BookingCalendarProps> = ({ onSelect }) => {
+export const BookingCalendar: React.FC<BookingCalendarProps> = ({ onSelect, selectedPackageId }) => {
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(selectedPackageId || null);
+
   const calculatePrice = (basePrice: number, category: string, type: string) => {
     if (type === 'omra') {
       switch(category) {
@@ -188,8 +191,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ onSelect }) =>
               return (
                 <button
                   key={pkg.id}
-                  onClick={() => onSelect(pkg)}
-                  className={`${style.container} rounded-lg p-6 border hover:scale-105 transition-all duration-300 text-left relative overflow-hidden`}
+                  onClick={() => {
+                    setSelectedPackage(pkg.id);
+                    onSelect(pkg);
+                  }}
+                  className={`${style.container} rounded-lg p-6 border hover:scale-105 transition-all duration-300 text-left relative overflow-hidden ${
+                    selectedPackage === pkg.id ? 'border-2 border-green-500' : ''
+                  }`}
                 >
                   {pkg.category !== 'standard' && (
                     <div className="absolute top-2 right-2">
@@ -235,8 +243,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({ onSelect }) =>
               return (
                 <button
                   key={pkg.id}
-                  onClick={() => onSelect(pkg)}
-                  className={`${style.container} rounded-lg p-6 border hover:scale-105 transition-all duration-300 text-left relative overflow-hidden`}
+                  onClick={() => {
+                    setSelectedPackage(pkg.id);
+                    onSelect(pkg);
+                  }}
+                  className={`${style.container} rounded-lg p-6 border hover:scale-105 transition-all duration-300 text-left relative overflow-hidden ${
+                    selectedPackage === pkg.id ? 'border-2 border-green-500' : ''
+                  }`}
                 >
                   {pkg.category !== 'standard' && (
                     <div className="absolute top-2 right-2">

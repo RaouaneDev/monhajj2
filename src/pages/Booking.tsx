@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { BookingForm } from '../components/booking/BookingForm';
 import { BookingCalendar } from '../components/booking/BookingCalendar';
 import { BookingDetails } from '../components/booking/BookingDetails';
@@ -46,8 +46,10 @@ interface BookingData {
 
 const Booking: React.FC = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const location = useLocation();
+  const initialPackage = location.state?.selectedPackage || null;
+  const [currentStep, setCurrentStep] = useState(initialPackage ? 2 : 1);
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(initialPackage);
   const [bookingData, setBookingData] = useState<BookingData>({
     clients: [{
       title: 'Mr',
@@ -115,7 +117,10 @@ const Booking: React.FC = () => {
     <div className="bg-secondary min-h-screen">
       <div className="container-custom py-12">
         {currentStep === 1 && (
-          <BookingCalendar onSelect={handlePackageSelect} />
+          <BookingCalendar 
+            onSelect={handlePackageSelect}
+            selectedPackageId={initialPackage?.id}
+          />
         )}
         {currentStep === 2 && (
           <BookingForm 

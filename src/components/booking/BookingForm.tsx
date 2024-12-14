@@ -274,10 +274,17 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, initialPacka
 
       {formStep === 1 && (
         <div className="space-y-4">
-          <div className="mb-6 p-4 bg-dark-300 rounded-lg">
-            <h3 className="text-lg font-semibold text-primary mb-2">Détails sélectionnés</h3>
-            <p className="text-yellow-light">{initialPackage?.name}</p>
-            <p className="text-primary font-bold">{initialPackage?.price}€/personne</p>
+          <div className="mb-6 p-4 bg-dark-300 rounded-lg border-2 border-green-500">
+            <h3 className="text-lg font-semibold text-primary mb-2 flex items-center">
+              <span className="text-green-500 mr-2">✓</span>
+              Forfait sélectionné
+            </h3>
+            <div className="space-y-2">
+              <p className="text-yellow-light text-lg font-semibold">
+                {initialPackage?.name}
+              </p>
+              <p className="text-primary font-bold">{initialPackage?.price}€/personne</p>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -392,6 +399,19 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, initialPacka
 
       {formStep === 2 && (
         <div className="space-y-4">
+          <div className="mb-6 p-4 bg-dark-300 rounded-lg border-2 border-green-500">
+            <h3 className="text-lg font-semibold text-primary mb-2 flex items-center">
+              <span className="text-green-500 mr-2">✓</span>
+              Forfait sélectionné
+            </h3>
+            <div className="space-y-2">
+              <p className="text-yellow-light text-lg font-semibold">
+                {initialPackage?.name}
+              </p>
+              <p className="text-primary font-bold">{initialPackage?.price}€/personne</p>
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-yellow-light">Date de naissance</label>
             <input
@@ -536,9 +556,14 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, initialPacka
                 </div>
 
                 {/* Afficher les détails du forfait */}
-                <div className="bg-dark-200 p-4 rounded-lg mt-4">
-                  <p className="font-medium mb-2">Détail du forfait :</p>
-                  {initialPackage?.type === 'hajj' ? (
+                <div className="bg-dark-200 p-4 rounded-lg mt-4 border-2 border-green-500">
+                  <p className="font-medium mb-2 flex items-center">
+                    <span className="text-green-500 mr-2">✓</span>
+                    Forfait sélectionné
+                  </p>
+                  {initialPackage?.name && (
+                    <>
+                      {initialPackage.type === 'hajj' ? (
                     <>
                       {initialPackage.category === 'standard' && (
                         <p className="text-sm">Forfait Hajj Standard</p>
@@ -552,17 +577,19 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, initialPacka
                     </>
                   ) : (
                     <>
-                      {initialPackage?.category === 'standard' && (
+                          {initialPackage.category === 'standard' && (
                         <p className="text-sm">Forfait Omra Standard - 1500€</p>
                       )}
-                      {initialPackage?.category === 'confort' && (
+                          {initialPackage.category === 'confort' && (
                         <p className="text-sm">Forfait Omra Confort - 2000€</p>
                       )}
-                      {initialPackage?.category === 'premium' && (
+                          {initialPackage.category === 'premium' && (
                         <p className="text-sm">Forfait Omra Premium - 2500€</p>
                       )}
-                      {initialPackage?.name.includes('Ramadhan') && (
+                          {initialPackage.name.includes('Ramadhan') && (
                         <p className="text-sm font-medium text-primary mt-2">Période Ramadhan</p>
+                          )}
+                        </>
                       )}
                     </>
                   )}
@@ -578,46 +605,35 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, initialPacka
                 <h4 className="font-medium text-primary">Choisir votre option de paiement :</h4>
                 
                 <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => handlePaymentOption(0.25)}
-                    className="p-4 bg-dark-300 rounded-lg border border-primary/30 hover:bg-dark-200 transition-all"
-                  >
-                    <p className="text-primary font-bold mb-1">Acompte 25%</p>
-                    <p className="text-yellow-light">{(totalPrice * 0.25).toFixed(2)}€</p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handlePaymentOption(0.5)}
-                    className="p-4 bg-dark-300 rounded-lg border border-primary/30 hover:bg-dark-200 transition-all"
-                  >
-                    <p className="text-primary font-bold mb-1">Acompte 50%</p>
-                    <p className="text-yellow-light">{(totalPrice * 0.5).toFixed(2)}€</p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handlePaymentOption(0.75)}
-                    className="p-4 bg-dark-300 rounded-lg border border-primary/30 hover:bg-dark-200 transition-all"
-                  >
-                    <p className="text-primary font-bold mb-1">Acompte 75%</p>
-                    <p className="text-yellow-light">{(totalPrice * 0.75).toFixed(2)}€</p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handlePaymentOption(1)}
-                    className="p-4 bg-dark-300 rounded-lg border border-primary/30 hover:bg-dark-200 transition-all"
-                  >
-                    <p className="text-primary font-bold mb-1">Paiement total</p>
-                    <p className="text-yellow-light">{totalPrice}€</p>
-                  </button>
+                  {[0.25, 0.5, 0.75, 1].map((percentage) => (
+                    <button
+                      key={percentage}
+                      type="button"
+                      onClick={() => handlePaymentOption(percentage)}
+                      className={`p-4 rounded-lg border transition-all ${
+                        selectedPaymentAmount === totalPrice * percentage
+                          ? 'bg-green-500/10 border-green-500 text-green-500'
+                          : 'bg-dark-300 border-primary/30 hover:bg-dark-200'
+                      }`}
+                    >
+                      <p className={`font-bold mb-1 ${
+                        selectedPaymentAmount === totalPrice * percentage
+                          ? 'text-green-500'
+                          : 'text-primary'
+                      }`}>
+                        {percentage === 1 ? 'Paiement total' : `Acompte ${percentage * 100}%`}
+                      </p>
+                      <p className="text-yellow-light">{(totalPrice * percentage).toFixed(2)}€</p>
+                    </button>
+                  ))}
                 </div>
 
                 {selectedPaymentAmount > 0 && (
-                  <div className="mt-6 p-4 bg-dark-200 rounded-lg">
-                    <p className="text-primary font-medium mb-2">Montant sélectionné :</p>
+                  <div className="mt-6 p-4 bg-dark-200 rounded-lg border-2 border-green-500">
+                    <p className="text-green-500 font-medium mb-2 flex items-center">
+                      <span className="mr-2">✓</span>
+                      Option de paiement sélectionnée
+                    </p>
                     <p className="text-2xl font-bold text-primary">{selectedPaymentAmount}€</p>
                     {selectedPaymentAmount < totalPrice && (
                       <p className="text-yellow-light mt-2">
