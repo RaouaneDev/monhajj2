@@ -61,7 +61,7 @@ const PaymentSuccess: React.FC = () => {
                   Référence du Paiement:
                 </Typography>
                 <Typography variant="body1" sx={{ color: colors.text.primary, mt: 1 }}>
-                  {paymentInfo.paymentMethodId}
+                  {paymentInfo.paymentIntentId}
                 </Typography>
               </Grid>
             </Grid>
