@@ -29,11 +29,7 @@ interface FormData {
   packageType: string;
 }
 
-interface RoomPrices {
-  double: number;
-  triple: number;
-  quadruple: number;
-}
+
 
 interface Package {
   id: string;
@@ -82,7 +78,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, initialPacka
   const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   // Prix par personne (le même pour tous les types de chambre)
-  const pricePerPerson = 6500;
+ 
 
   // Calculer le prix total en fonction du forfait sélectionné
   useEffect(() => {
