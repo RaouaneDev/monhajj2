@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Box, Typography, Button } from '@mui/material';
+import { Container, Box, Typography, Button, Grid, FormControl, InputLabel, Select, MenuItem, TextField } from '@mui/material';
 
 interface Package {
   id: string;
@@ -77,7 +77,20 @@ const initialFormState: FormData = {
 
 const Booking: React.FC = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<FormData>(initialFormState);
+  const [formData, setFormData] = useState<FormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    gender: '', 
+    nationality: '',
+    age: '',
+    numberOfPersons: '',
+    package: '',
+    roomType: '',
+    message: '',
+    termsAccepted: false,
+  });
   const [totalPrice, setTotalPrice] = useState<number>(0);
   const [deposit, setDeposit] = useState<number>(0);
   const [remainingAmount, setRemainingAmount] = useState<number>(0);
@@ -323,171 +336,173 @@ const Booking: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                  Prénom
-                </label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Genre</InputLabel>
+                <Select
+                  name="gender"
+                  value={formData.gender}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
-                  required
-                />
-                {errors.firstName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
-                )}
-              </div>
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                  Nom
-                </label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
-                  required
-                />
-                {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
-                )}
-              </div>
-            </div>
+                  label="Genre"
+                >
+                  <MenuItem value="M">Monsieur</MenuItem>
+                  <MenuItem value="F">Madame</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                fullWidth
+                label="Prénom"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </Grid>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                fullWidth
+                label="Nom"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                fullWidth
+                label="Email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
-                required
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-              )}
-            </div>
+            </Grid>
+          </Grid>
 
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Téléphone
-              </label>
-              <input
-                type="tel"
-                id="phone"
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                fullWidth
+                label="Téléphone"
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
-                required
               />
-              {errors.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="package" className="block text-sm font-medium text-gray-700">
-                Forfait
-              </label>
-              <select
-                id="package"
-                name="package"
-                value={formData.package}
-                onChange={handlePackageChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
                 required
-              >
-                <option value="">Sélectionnez un forfait</option>
-                {packages.map((pkg) => (
-                  <option key={pkg.id} value={pkg.id}>
-                    {pkg.name} - {pkg.price}€
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="roomType" className="block text-sm font-medium text-gray-700">
-                Type de chambre
-              </label>
-              <select
-                id="roomType"
-                name="roomType"
-                value={formData.roomType}
-                onChange={handleRoomTypeChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
-                required
-              >
-                <option value="">Sélectionnez un type de chambre</option>
-                {roomTypes.map((room) => (
-                  <option key={room.id} value={room.id}>
-                    {room.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="numberOfPersons" className="block text-sm font-medium text-gray-700">
-                Nombre de personnes
-              </label>
-              <select
-                id="numberOfPersons"
-                name="numberOfPersons"
-                value={formData.numberOfPersons}
+                fullWidth
+                label="Nationalité"
+                name="nationality"
+                value={formData.nationality}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
-                required
-              >
-                {[1, 2, 3, 4].map((num) => (
-                  <option key={num} value={num}>
-                    {num} {num === 1 ? 'personne' : 'personnes'}
-                  </option>
-                ))}
-              </select>
-            </div>
+              />
+            </Grid>
+          </Grid>
 
-            <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-                Message (optionnel)
-              </label>
-              <textarea
-                id="message"
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                fullWidth
+                label="Age"
+                name="age"
+                value={formData.age}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Forfait</InputLabel>
+                <Select
+                  name="package"
+                  value={formData.package}
+                  onChange={handlePackageChange}
+                  label="Forfait"
+                >
+                  <option value="">Sélectionnez un forfait</option>
+                  {packages.map((pkg) => (
+                    <option key={pkg.id} value={pkg.id}>
+                      {pkg.name} - {pkg.price}€
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Type de chambre</InputLabel>
+                <Select
+                  name="roomType"
+                  value={formData.roomType}
+                  onChange={handleRoomTypeChange}
+                  label="Type de chambre"
+                >
+                  <option value="">Sélectionnez un type de chambre</option>
+                  {roomTypes.map((room) => (
+                    <option key={room.id} value={room.id}>
+                      {room.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Nombre de personnes</InputLabel>
+                <Select
+                  name="numberOfPersons"
+                  value={formData.numberOfPersons}
+                  onChange={handleInputChange}
+                  label="Nombre de personnes"
+                >
+                  {[1, 2, 3, 4].map((num) => (
+                    <option key={num} value={num}>
+                      {num} {num === 1 ? 'personne' : 'personnes'}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Message (optionnel)"
                 name="message"
-                rows={4}
                 value={formData.message}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
               />
-            </div>
+            </Grid>
+          </Grid>
 
-            <div className="flex items-center">
-              <input
-                id="termsAccepted"
-                name="termsAccepted"
-                type="checkbox"
-                checked={formData.termsAccepted}
-                onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
-                className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
-                required
-              />
-              <label htmlFor="termsAccepted" className="ml-2 block text-sm text-gray-700">
-                J'accepte les conditions d'inscription
-              </label>
-            </div>
-          </div>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <FormControl>
+                <InputLabel>Acceptation des conditions</InputLabel>
+                <input
+                  type="checkbox"
+                  name="termsAccepted"
+                  checked={formData.termsAccepted}
+                  onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
+                />
+              </FormControl>
+            </Grid>
+          </Grid>
 
           <div className="mt-6">
             <button
