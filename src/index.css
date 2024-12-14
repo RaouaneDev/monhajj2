@@ -9,19 +9,19 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply font-sans text-gray-800;
+    @apply bg-dark-100 text-primary;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
+    @apply text-primary;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300;
+    @apply bg-primary text-secondary px-6 py-2 rounded-lg hover:bg-yellow-dark transition-all duration-300;
   }
   .btn-secondary {
-    @apply bg-secondary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300;
+    @apply bg-secondary text-primary px-6 py-2 rounded-lg hover:bg-dark-300 border border-primary transition-all duration-300;
   }
   .container-custom {
     @apply container mx-auto px-4 sm:px-6 lg:px-8;
@@ -81,4 +81,23 @@
 
 .StripeElement--webkit-autofill {
   background-color: #fefde5 !important;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+  
+  .print\:hidden {
+    display: none;
+  }
+  
+  .print\:text-black {
+    color: black !important;
+  }
+  
+  .container-custom {
+    max-width: none;
+    padding: 0;
+  }
 }

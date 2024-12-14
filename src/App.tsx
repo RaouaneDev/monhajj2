@@ -8,9 +8,7 @@ import GuideOmra from './pages/GuideOmra';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Booking from './pages/Booking';
-import PaymentSuccess from './pages/PaymentSuccess';
-import RegistrationSuccess from './pages/RegistrationSuccess';
-import Payment from './pages/Payment';
+import BookingConfirmation from './pages/BookingConfirmation';
 
 function App() {
   return (
@@ -23,9 +21,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/booking" element={<Booking />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/payment-success" element={<PaymentSuccess />} />
-        <Route path="/registration-success" element={<RegistrationSuccess />} />
+        <Route path="/booking-confirmation" element={<BookingConfirmation />} />
       </Routes>
     </MainLayout>
   );

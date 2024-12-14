@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import {
   Elements,
   PaymentElement,
@@ -188,11 +188,11 @@ const Payment = () => {
     );
   }
 
-  const options = {
-    clientSecret,
+  const options: StripeElementsOptions = {
+    clientSecret: clientSecret || '',
     appearance: {
-      theme: 'stripe',
-    },
+      theme: 'stripe'
+    }
   };
 
   return (

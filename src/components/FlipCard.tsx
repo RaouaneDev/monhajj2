@@ -1,55 +1,47 @@
 import React, { useState } from 'react';
 
 interface FlipCardProps {
-  frontImage: string;
   frontTitle: string;
   frontDescription: string;
   backTitle: string;
   backDescription: string;
-  price?: string;
+  price: string;
+  badge?: string;
 }
 
 const FlipCard: React.FC<FlipCardProps> = ({
-  frontImage,
   frontTitle,
   frontDescription,
   backTitle,
   backDescription,
-  price
+  price,
+  badge
 }) => {
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  const handleClick = () => {
-    setIsFlipped(!isFlipped);
-  };
-
   return (
-    <div 
-      className="flip-card cursor-pointer w-full h-[400px] perspective-1000"
-      onClick={handleClick}
-    >
-      <div className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-        {/* Front de la carte */}
-        <div className="absolute w-full h-full backface-hidden">
-          <div className="rounded-lg shadow-lg overflow-hidden h-full relative">
-            <div 
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
-              style={{ backgroundImage: `url(${frontImage})` }}
-            />
-            <div className="absolute inset-0 bg-black bg-opacity-50" />
-            <div className="relative p-6 flex flex-col justify-end h-full">
-              <h3 className="text-xl font-semibold mb-2 text-white">{frontTitle}</h3>
-              <p className="text-gray-100 mb-4">{frontDescription}</p>
-              {price && <p className="text-yellow-300 font-bold mb-4">À partir de {price}</p>}
-            </div>
+    <div className="flip-card">
+      <div className="flip-card-inner">
+        <div className="flip-card-front bg-gradient-to-br from-dark-300 to-dark-200">
+          <div className="p-6">
+            <h3 className="text-xl font-bold text-primary mb-2">{frontTitle}</h3>
+            <p className="text-yellow-light">{frontDescription}</p>
+            <p className="text-2xl font-bold text-primary mt-4">{price}</p>
           </div>
+          {badge && (
+            <div className={`absolute top-2 right-2 ${
+              badge === 'Places limitées' 
+                ? 'bg-red-500/20 text-red-500 animate-pulse'
+                : badge.includes('RAMADHAN')
+                ? 'bg-black text-white'
+                : ''
+            } px-3 py-1 rounded-full text-xs font-bold`}>
+              {badge}
+            </div>
+          )}
         </div>
-
-        {/* Dos de la carte */}
-        <div className="absolute w-full h-full backface-hidden rotate-y-180">
-          <div className="bg-yellow-300 text-gray-800 rounded-lg shadow-lg overflow-hidden h-full p-6">
-            <h3 className="text-2xl font-semibold mb-4">{backTitle}</h3>
-            <p className="text-lg whitespace-pre-line">{backDescription}</p>
+        <div className="flip-card-back bg-white p-6 rounded-lg">
+          <h3 className="text-xl font-bold text-black mb-4">{backTitle}</h3>
+          <div className="text-black whitespace-pre-line">
+            {backDescription}
           </div>
         </div>
       </div>
