@@ -29,8 +29,6 @@ interface FormData {
   packageType: string;
 }
 
-
-
 interface Package {
   id: string;
   type: 'hajj' | 'omra';

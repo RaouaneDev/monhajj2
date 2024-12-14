@@ -1,6 +1,5 @@
-
-
 import React from 'react';
+
 interface FlipCardProps {
   frontTitle: string;
   frontDescription: string;
