@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { scrollToTop } from '../../utils/scrollUtils';
 
 interface BookingDetailsProps {
@@ -34,8 +33,6 @@ interface BookingDetailsProps {
 }
 
 export const BookingDetails: React.FC<BookingDetailsProps> = ({ booking, onConfirm }) => {
-  const navigate = useNavigate();
-
   const handleConfirm = () => {
     scrollToTop();
     onConfirm();

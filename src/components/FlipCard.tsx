@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-
 interface FlipCardProps {
   frontTitle: string;
   frontDescription: string;

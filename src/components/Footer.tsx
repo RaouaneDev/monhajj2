@@ -14,15 +14,30 @@ const Footer: React.FC = () => {
               Licence n°IM075XXXXXX
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="hover:text-primary transition-colors">
+              <a 
+                href="https://facebook.com/votre-page" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:text-primary transition-colors"
+              >
                 <span className="sr-only">Facebook</span>
                 <i className="fab fa-facebook-f"></i>
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a 
+                href="https://instagram.com/votre-compte" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:text-primary transition-colors"
+              >
                 <span className="sr-only">Instagram</span>
                 <i className="fab fa-instagram"></i>
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a 
+                href="https://wa.me/votre-numero" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:text-primary transition-colors"
+              >
                 <span className="sr-only">WhatsApp</span>
                 <i className="fab fa-whatsapp"></i>
               </a>
