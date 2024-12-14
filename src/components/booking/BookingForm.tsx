@@ -45,7 +45,7 @@ interface BookingFormProps {
 
 export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, initialPackage }) => {
   const [formStep, setFormStep] = useState(1); // 1: Infos de base, 2: Infos complémentaires, 3: Contact d'urgence, 4: Prix
-  const [currentClientIndex, setCurrentClientIndex] = useState(0);
+  const [currentClientIndex] = useState(0);
   const [formData, setFormData] = useState<FormData>({
     clients: [{
       title: 'Mr',
