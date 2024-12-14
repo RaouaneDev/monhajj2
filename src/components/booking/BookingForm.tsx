@@ -170,17 +170,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, initialPacka
     }
   };
 
-  const handleNextClient = () => {
-    if (currentClientIndex < formData.numberOfPeople - 1) {
-      setCurrentClientIndex(prev => prev + 1);
-    }
-  };
-
-  const handlePreviousClient = () => {
-    if (currentClientIndex > 0) {
-      setCurrentClientIndex(prev => prev - 1);
-    }
-  };
+  
 
   const isCurrentClientValid = () => {
     const currentClient = formData.clients[currentClientIndex];
@@ -241,104 +231,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, initialPacka
 
   const currentClient = formData.clients[currentClientIndex];
 
-  const packages = [
-    {
-      id: 'hajj-2025-standard',
-      type: 'hajj',
-      name: 'Hajj 2025 Standard',
-      date: new Date(2025, 5, 15),
-      price: 6500,
-      category: 'standard'
-    },
-    {
-      id: 'hajj-2025-confort',
-      type: 'hajj',
-      name: 'Hajj 2025 Confort',
-      date: new Date(2025, 5, 15),
-      price: 8450,
-      category: 'confort'
-    },
-    {
-      id: 'hajj-2025-premium',
-      type: 'hajj',
-      name: 'Hajj 2025 Premium',
-      date: new Date(2025, 5, 15),
-      price: 9750,
-      category: 'premium'
-    },
-    {
-      id: 'omra-janvier-standard',
-      type: 'omra',
-      name: 'Omra Janvier 2025 Standard',
-      date: new Date(2025, 0, 15),
-      price: 1500,
-      category: 'standard'
-    },
-    {
-      id: 'omra-janvier-confort',
-      type: 'omra',
-      name: 'Omra Janvier 2025 Confort',
-      date: new Date(2025, 0, 15),
-      price: 2000,
-      category: 'confort'
-    },
-    {
-      id: 'omra-janvier-premium',
-      type: 'omra',
-      name: 'Omra Janvier 2025 Premium',
-      date: new Date(2025, 0, 15),
-      price: 2500,
-      category: 'premium'
-    },
-    {
-      id: 'omra-fevrier-standard',
-      type: 'omra',
-      name: 'Omra Février 2025 Standard',
-      date: new Date(2025, 1, 15),
-      price: 1500,
-      category: 'standard'
-    },
-    {
-      id: 'omra-fevrier-confort',
-      type: 'omra',
-      name: 'Omra Février 2025 Confort',
-      date: new Date(2025, 1, 15),
-      price: 2000,
-      category: 'confort'
-    },
-    {
-      id: 'omra-fevrier-premium',
-      type: 'omra',
-      name: 'Omra Février 2025 Premium',
-      date: new Date(2025, 1, 15),
-      price: 2500,
-      category: 'premium'
-    },
-    {
-      id: 'omra-mars-standard',
-      type: 'omra',
-      name: 'Omra Mars 2025 Standard',
-      date: new Date(2025, 2, 15),
-      price: 1500,
-      category: 'standard'
-    },
-    {
-      id: 'omra-mars-confort',
-      type: 'omra',
-      name: 'Omra Mars 2025 Confort',
-      date: new Date(2025, 2, 15),
-      price: 2000,
-      category: 'confort'
-    },
-    {
-      id: 'omra-mars-premium',
-      type: 'omra',
-      name: 'Omra Mars 2025 Premium',
-      date: new Date(2025, 2, 15),
-      price: 2500,
-      category: 'premium'
-    }
-  ];
+  
 
   return (
     <div className="max-w-md mx-auto p-6 bg-secondary rounded-lg shadow-lg relative">
